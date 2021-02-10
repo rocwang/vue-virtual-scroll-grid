@@ -8,28 +8,48 @@
     <div ref="grid" v-bind="$attrs">
       <div :class="$style.probe" ref="probe">Probe</div>
 
-      <template v-for="(hit, index) in buffer" :key="index">
-        <slot :style="hit.style" :hit="hit" />
+      <template v-for="(internalItem, index) in buffer" :key="index">
+        <slot
+          :item="internalItem.value"
+          :index="internalItem.index"
+          :style="internalItem.style"
+        />
       </template>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, onUnmounted, PropType, ref } from "vue";
+import { defineComponent, onMounted, PropType, ref, toRefs } from "vue";
 import {
   combineLatest,
   merge,
   fromEvent,
-  Subscription,
+  fromEventPattern,
   Observable,
 } from "rxjs";
 import { map, scan, startWith } from "rxjs/operators";
-import { useObservable } from "@vueuse/rxjs";
+import { useObservable, from } from "@vueuse/rxjs";
+import {
+  T,
+  __,
+  always,
+  concat,
+  cond,
+  differenceWith,
+  identical,
+  identity,
+  includes,
+  map as ramdaMap,
+  pipe,
+  reject,
+  zip,
+} from "ramda";
+import { isUndefined } from "ramda-adjunct";
 
-declare interface BufferItem {
-  localIndex: number;
-  payload: any;
+declare interface InternalItem {
+  index: number;
+  value: any;
   style?: { transform: string };
 }
 
@@ -38,42 +58,58 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     items: {
-      type: Array as PropType<BufferItem[]>,
+      type: Array as PropType<any[]>,
       required: true,
     },
   },
-  setup(props) {
+  setup(props, { attrs }) {
+    // region: rendering trigger streams
+
+    // todo: on css changes
+
+    // on items change
+    const { items } = toRefs(props);
+    const items$: Observable<InternalItem[]> = from(items).pipe(
+      startWith(items.value),
+      map((items) => items.map((value, index) => ({ index, value })))
+    );
+
+    // on resize
+    const resize$ = fromEvent<UIEvent>(window, "resize", {
+      passive: true,
+    });
+
+    // on scroll
+    const scroll$ = fromEvent<UIEvent>(window, "scroll", {
+      passive: true,
+      capture: true,
+    });
+
+    // on mounted
+    const mount$ = fromEventPattern<undefined>((handler) => onMounted(handler));
+    // endregion
+
     // region: measure on the visual grid
     const root = ref<HTMLElement>(document.createElement("div"));
     const grid = ref<HTMLElement>(document.createElement("div"));
     const probe = ref<HTMLElement>(document.createElement("div"));
 
-    const resize$ = fromEvent(window, "resize", {
-      passive: true,
-    }).pipe(startWith(null));
-
-    const scroll$ = fromEvent(window, "scroll", {
-      passive: true,
-      capture: true,
-    });
-
-    const heightAboveWindow$: Observable<number> = merge(resize$, scroll$).pipe(
-      map((): number => {
-        const boundingBox = root.value.getBoundingClientRect();
-
-        return Math.abs(Math.min(boundingBox.top, 0));
-      })
+    const heightAboveWindow$: Observable<number> = merge(
+      mount$,
+      resize$,
+      scroll$
+    ).pipe(
+      map(() => Math.abs(Math.min(root.value.getBoundingClientRect().top, 0)))
     );
 
-    const resizeMeasure$ = resize$.pipe(
-      map((): {
-        containerHeight: number;
-        colGap: number;
-        rowGap: number;
-        columns: number;
-        itemHeightWithGap: number;
-        itemWidthWithGap: number;
-      } => {
+    const resizeMeasure$: Observable<{
+      containerHeight: number;
+      rowGap: number;
+      columns: number;
+      itemHeightWithGap: number;
+      itemWidthWithGap: number;
+    }> = merge(mount$, resize$).pipe(
+      map(() => {
         const colGap = parseInt(
           window
             .getComputedStyle(grid.value)
@@ -97,18 +133,30 @@ export default defineComponent({
     );
     // endregion
 
-    const measure$ = combineLatest([heightAboveWindow$, resizeMeasure$]).pipe(
-      map(([heightAboveWindow, item]) => ({ heightAboveWindow, ...item }))
+    const measure$: Observable<{
+      heightAboveWindow: number;
+      items: InternalItem[];
+      containerHeight: number;
+      rowGap: number;
+      columns: number;
+      itemHeightWithGap: number;
+      itemWidthWithGap: number;
+    }> = combineLatest([heightAboveWindow$, resizeMeasure$, items$]).pipe(
+      map(([heightAboveWindow, resizeMeasure, items]) => ({
+        ...resizeMeasure,
+        heightAboveWindow,
+        items,
+      }))
     );
 
-    const contentHeight$ = measure$.pipe(
+    const contentHeight$: Observable<number> = measure$.pipe(
       map(
-        ({ columns, rowGap, itemHeightWithGap }) =>
-          itemHeightWithGap * Math.ceil(props.items.length / columns) - rowGap
+        ({ columns, rowGap, itemHeightWithGap, items }) =>
+          itemHeightWithGap * Math.ceil(items.length / columns) - rowGap
       )
     );
 
-    const buffer$ = measure$.pipe(
+    const buffer$: Observable<InternalItem[]> = measure$.pipe(
       map(
         ({
           heightAboveWindow,
@@ -117,6 +165,7 @@ export default defineComponent({
           rowGap,
           itemWidthWithGap,
           itemHeightWithGap,
+          items,
         }) => {
           const rowsInView =
             itemHeightWithGap &&
@@ -127,13 +176,17 @@ export default defineComponent({
             itemHeightWithGap &&
             Math.floor((heightAboveWindow + rowGap) / itemHeightWithGap);
           const offset = rowsBeforeView * columns;
-          const bufferedOffset = Math.max(offset - Math.floor(length / 2), 0);
 
-          const bufferedLength = Math.min(length * 2, props.items.length);
+          const bufferedOffset = Math.max(offset - Math.floor(length / 2), 0);
+          const bufferedLength = Math.min(length * 2, items.length);
+
+          const visibleItems = items.slice(
+            bufferedOffset,
+            Math.min(bufferedOffset + bufferedLength, items.length)
+          );
 
           return {
-            bufferedOffset,
-            bufferedLength,
+            visibleItems,
             columns,
             itemWidthWithGap,
             itemHeightWithGap,
@@ -144,49 +197,42 @@ export default defineComponent({
         (
           { buffer },
           {
-            bufferedOffset,
-            bufferedLength,
+            visibleItems,
             columns,
             itemWidthWithGap,
             itemHeightWithGap,
           }
         ) => {
-          const visibleItems = props.items.slice(
-            bufferedOffset,
-            Math.min(bufferedOffset + bufferedLength, props.items.length)
+          const diffWithIdentical = differenceWith<InternalItem, InternalItem>(
+            identical
           );
-          const itemsToRender = visibleItems.filter(
-            (item) => !buffer.includes(item)
+          const itemsToAdd = diffWithIdentical(visibleItems, buffer);
+          const itemsFreeToUse = diffWithIdentical(buffer, visibleItems);
+
+          const replaceMap = new Map(zip(itemsFreeToUse, itemsToAdd));
+          const itemsToBeReplaced = [...replaceMap.keys()];
+          const itemsToReplaceWith = [...replaceMap.values()];
+
+          const itemsToDelete = diffWithIdentical(
+            itemsFreeToUse,
+            itemsToBeReplaced
           );
-          const freeSlotIndices = buffer.reduce(
-            (freeSlots, renderedItem, index) => {
-              if (!visibleItems.includes(renderedItem)) {
-                freeSlots.push(index);
-              }
-              return freeSlots;
-            },
-            []
+          const itemsToAppend = diffWithIdentical(
+            itemsToAdd,
+            itemsToReplaceWith
           );
 
-          // update the rendering buffer
-          const updateCount = Math.max(
-            itemsToRender.length,
-            freeSlotIndices.length
-          );
-          for (let i = 0; i < updateCount; i++) {
-            const slot = freeSlotIndices.pop();
-            const item = itemsToRender.pop();
-            if (slot >= 0 && item) {
-              // replace
-              buffer[slot] = item;
-            } else if (slot >= 0 && !item) {
-              // remove the extra free buffer
-              buffer.splice(slot, 1);
-            } else if (slot === undefined && item) {
-              // insert
-              buffer.push(item);
-            }
-          }
+          buffer = pipe(
+            ramdaMap<InternalItem, InternalItem | undefined>(
+              cond([
+                [replaceMap.has.bind(replaceMap), replaceMap.get.bind(replaceMap)],
+                [includes(__, itemsToDelete), always(undefined)],
+                [T, identity],
+              ])
+            ),
+            reject(isUndefined),
+            concat(__, itemsToAppend)
+          )(buffer) as InternalItem[];
 
           return {
             buffer,
@@ -195,7 +241,12 @@ export default defineComponent({
             itemHeightWithGap,
           };
         },
-        { buffer: [] }
+        {
+          buffer: [] as InternalItem[],
+          columns: 0,
+          itemWidthWithGap: 0,
+          itemHeightWithGap: 0,
+        }
       ),
       map(
         ({
@@ -203,10 +254,10 @@ export default defineComponent({
           columns,
           itemWidthWithGap,
           itemHeightWithGap,
-        }): BufferItem[] =>
+        }): InternalItem[] =>
           buffer.map((item) => {
-            const x = (item.localIndex % columns) * itemWidthWithGap;
-            const y = Math.floor(item.localIndex / columns) * itemHeightWithGap;
+            const x = (item.index % columns) * itemWidthWithGap;
+            const y = Math.floor(item.index / columns) * itemHeightWithGap;
 
             return {
               ...item,
@@ -216,24 +267,6 @@ export default defineComponent({
       )
     );
 
-    const buffer = ref<BufferItem[]>([]);
-    const contentHeight = ref<number>(window.outerHeight);
-    let bufferSub: Subscription;
-    let contentHeightSub: Subscription;
-    onMounted(() => {
-      contentHeightSub = contentHeight$.subscribe(
-        (contentHeightValue) => (contentHeight.value = contentHeightValue)
-      );
-
-      bufferSub = buffer$.subscribe(
-        (bufferValue) => (buffer.value = bufferValue)
-      );
-    });
-    onUnmounted(() => {
-      bufferSub.unsubscribe();
-      contentHeightSub.unsubscribe();
-    });
-
     return {
       // refs
       root,
@@ -241,8 +274,8 @@ export default defineComponent({
       probe,
 
       // data to render
-      buffer,
-      contentHeight,
+      buffer: useObservable(buffer$),
+      contentHeight: useObservable(contentHeight$),
     };
   },
 });

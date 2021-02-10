@@ -9,11 +9,14 @@
     },
     "dependencies": {
         "@vueuse/rxjs": "^4.1.0",
+        "ramda": "^0.27.1",
+        "ramda-adjunct": "^2.30.0",
         "rxjs": "^6.6.3",
         "vue": "^3.0.5"
     },
     "devDependencies": {
         "@types/node": "^14.14.20",
+        "@types/ramda": "^0.27.38",
         "@vitejs/plugin-vue": "^1.0.4",
         "@vue/compiler-sfc": "^3.0.5",
         "@vuedx/typecheck": ">=0.6.0",

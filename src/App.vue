@@ -1,7 +1,7 @@
 <template>
-  <Grid :items="items" v-slot="{ hit, className, style }" :class="$style.grid">
+  <Grid :items="items" v-slot="{ item, style }" :class="$style.grid">
     <ProductItem
-      :text="hit.localIndex.toString(10)"
+      :text="item.toString(10)"
       :class="$style.item"
       :style="style"
     />
@@ -23,12 +23,7 @@ export default defineComponent({
     return {
       items: Array(1000)
         .fill(null)
-        .map((item, index) => {
-          return {
-            localIndex: index,
-            payload: {},
-          };
-        }),
+        .map((item, index) => index),
     };
   },
 });
