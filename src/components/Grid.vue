@@ -23,29 +23,26 @@
 import { defineComponent, onMounted, PropType, ref, toRefs } from "vue";
 import {
   combineLatest,
-  merge,
   fromEvent,
   fromEventPattern,
+  merge,
   Observable,
 } from "rxjs";
 import { map, scan, startWith } from "rxjs/operators";
-import { useObservable, from } from "@vueuse/rxjs";
+import { from, useObservable } from "@vueuse/rxjs";
 import {
-  T,
   __,
-  always,
   concat,
-  cond,
-  differenceWith,
-  identical,
+  difference,
   identity,
-  includes,
+  ifElse,
   map as ramdaMap,
+  min,
   pipe,
-  reject,
+  without,
   zip,
 } from "ramda";
-import { isUndefined } from "ramda-adjunct";
+import { mapIndexed } from "ramda-adjunct";
 
 declare interface InternalItem {
   index: number;
@@ -62,7 +59,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup(props, { attrs }) {
+  setup(props) {
     // region: rendering trigger streams
 
     // todo: on css changes
@@ -70,14 +67,12 @@ export default defineComponent({
     // on items change
     const { items } = toRefs(props);
     const items$: Observable<InternalItem[]> = from(items).pipe(
-      startWith(items.value),
-      map((items) => items.map((value, index) => ({ index, value })))
+      startWith(items.value as InternalItem[]),
+      map(mapIndexed((value, index) => ({ value, index })))
     );
 
     // on resize
-    const resize$ = fromEvent<UIEvent>(window, "resize", {
-      passive: true,
-    });
+    const resize$ = fromEvent<UIEvent>(window, "resize", { passive: true });
 
     // on scroll
     const scroll$ = fromEvent<UIEvent>(window, "scroll", {
@@ -86,7 +81,7 @@ export default defineComponent({
     });
 
     // on mounted
-    const mount$ = fromEventPattern<undefined>((handler) => onMounted(handler));
+    const mount$ = fromEventPattern<undefined>(onMounted);
     // endregion
 
     // region: measure on the visual grid
@@ -99,77 +94,61 @@ export default defineComponent({
       resize$,
       scroll$
     ).pipe(
-      map(() => Math.abs(Math.min(root.value.getBoundingClientRect().top, 0)))
+      map(() => root.value.getBoundingClientRect().top),
+      map(pipe(min(0), Math.abs))
     );
 
     const resizeMeasure$: Observable<{
-      containerHeight: number;
       rowGap: number;
       columns: number;
       itemHeightWithGap: number;
       itemWidthWithGap: number;
     }> = merge(mount$, resize$).pipe(
       map(() => {
-        const colGap = parseInt(
-          window
-            .getComputedStyle(grid.value)
-            .getPropertyValue("grid-column-gap")
-        );
-        const rowGap = parseInt(
-          window.getComputedStyle(grid.value).getPropertyValue("grid-row-gap")
-        );
-
+        const computedStyle = window.getComputedStyle(grid.value);
         return {
-          containerHeight: window.innerHeight,
-          rowGap,
-          columns: window
-            .getComputedStyle(grid.value)
+          colGap: parseInt(computedStyle.getPropertyValue("grid-column-gap")),
+          rowGap: parseInt(computedStyle.getPropertyValue("grid-row-gap")),
+          columns: computedStyle
             .getPropertyValue("grid-template-columns")
             .split(" ").length,
-          itemHeightWithGap: probe.value.offsetHeight + rowGap,
-          itemWidthWithGap: probe.value.offsetWidth + colGap,
+          itemHeight: probe.value.offsetHeight,
+          itemWidth: probe.value.offsetWidth,
         };
-      })
+      }),
+      map(({ colGap, rowGap, columns, itemHeight, itemWidth }) => ({
+        rowGap,
+        columns,
+        itemHeightWithGap: itemHeight + rowGap,
+        itemWidthWithGap: itemWidth + colGap,
+      }))
     );
     // endregion
 
-    const measure$: Observable<{
-      heightAboveWindow: number;
-      items: InternalItem[];
-      containerHeight: number;
-      rowGap: number;
-      columns: number;
-      itemHeightWithGap: number;
-      itemWidthWithGap: number;
-    }> = combineLatest([heightAboveWindow$, resizeMeasure$, items$]).pipe(
-      map(([heightAboveWindow, resizeMeasure, items]) => ({
-        ...resizeMeasure,
-        heightAboveWindow,
-        items,
-      }))
-    );
-
-    const contentHeight$: Observable<number> = measure$.pipe(
+    const contentHeight$: Observable<number> = combineLatest([
+      resizeMeasure$,
+      items$,
+    ]).pipe(
       map(
-        ({ columns, rowGap, itemHeightWithGap, items }) =>
+        ([{ columns, rowGap, itemHeightWithGap }, items]) =>
           itemHeightWithGap * Math.ceil(items.length / columns) - rowGap
       )
     );
 
-    const buffer$: Observable<InternalItem[]> = measure$.pipe(
+    const buffer$: Observable<InternalItem[]> = combineLatest([
+      heightAboveWindow$,
+      resizeMeasure$,
+      items$,
+    ]).pipe(
       map(
-        ({
+        ([
           heightAboveWindow,
-          containerHeight,
-          columns,
-          rowGap,
-          itemWidthWithGap,
-          itemHeightWithGap,
+          { columns, rowGap, itemWidthWithGap, itemHeightWithGap },
           items,
-        }) => {
+        ]) => {
           const rowsInView =
             itemHeightWithGap &&
-            Math.ceil((containerHeight + rowGap) / itemHeightWithGap) + 1;
+            Math.ceil((window.innerHeight + rowGap) / itemHeightWithGap) + 1;
           const length = rowsInView * columns;
 
           const rowsBeforeView =
@@ -180,91 +159,46 @@ export default defineComponent({
           const bufferedOffset = Math.max(offset - Math.floor(length / 2), 0);
           const bufferedLength = Math.min(length * 2, items.length);
 
-          const visibleItems = items.slice(
-            bufferedOffset,
-            Math.min(bufferedOffset + bufferedLength, items.length)
-          );
+          // visible items
+          return items
+            .slice(
+              bufferedOffset,
+              Math.min(bufferedOffset + bufferedLength, items.length)
+            )
+            .map((item) => {
+              const x = (item.index % columns) * itemWidthWithGap;
+              const y = Math.floor(item.index / columns) * itemHeightWithGap;
 
-          return {
-            visibleItems,
-            columns,
-            itemWidthWithGap,
-            itemHeightWithGap,
-          };
+              return {
+                ...item,
+                style: { transform: `translate(${x}px, ${y}px)` },
+              };
+            });
         }
       ),
-      scan(
-        (
-          { buffer },
-          {
-            visibleItems,
-            columns,
-            itemWidthWithGap,
-            itemHeightWithGap,
-          }
-        ) => {
-          const diffWithIdentical = differenceWith<InternalItem, InternalItem>(
-            identical
-          );
-          const itemsToAdd = diffWithIdentical(visibleItems, buffer);
-          const itemsFreeToUse = diffWithIdentical(buffer, visibleItems);
+      scan((buffer, visibleItems) => {
+        const itemsToAdd = difference(visibleItems, buffer);
+        const itemsFreeToUse = difference(buffer, visibleItems);
 
-          const replaceMap = new Map(zip(itemsFreeToUse, itemsToAdd));
-          const itemsToBeReplaced = [...replaceMap.keys()];
-          const itemsToReplaceWith = [...replaceMap.values()];
+        const replaceMap = new Map(zip(itemsFreeToUse, itemsToAdd));
+        const itemsToBeReplaced = [...replaceMap.keys()];
+        const itemsToReplaceWith = [...replaceMap.values()];
 
-          const itemsToDelete = diffWithIdentical(
-            itemsFreeToUse,
-            itemsToBeReplaced
-          );
-          const itemsToAppend = diffWithIdentical(
-            itemsToAdd,
-            itemsToReplaceWith
-          );
+        const itemsToDelete = difference(itemsFreeToUse, itemsToBeReplaced);
+        const itemsToAppend = difference(itemsToAdd, itemsToReplaceWith);
 
-          buffer = pipe(
-            ramdaMap<InternalItem, InternalItem | undefined>(
-              cond([
-                [replaceMap.has.bind(replaceMap), replaceMap.get.bind(replaceMap)],
-                [includes(__, itemsToDelete), always(undefined)],
-                [T, identity],
-              ])
-            ),
-            reject(isUndefined),
-            concat(__, itemsToAppend)
-          )(buffer) as InternalItem[];
-
-          return {
-            buffer,
-            columns,
-            itemWidthWithGap,
-            itemHeightWithGap,
-          };
-        },
-        {
-          buffer: [] as InternalItem[],
-          columns: 0,
-          itemWidthWithGap: 0,
-          itemHeightWithGap: 0,
-        }
-      ),
-      map(
-        ({
-          buffer,
-          columns,
-          itemWidthWithGap,
-          itemHeightWithGap,
-        }): InternalItem[] =>
-          buffer.map((item) => {
-            const x = (item.index % columns) * itemWidthWithGap;
-            const y = Math.floor(item.index / columns) * itemHeightWithGap;
-
-            return {
-              ...item,
-              style: { transform: `translate(${x}px, ${y}px)` },
-            };
-          })
-      )
+        return pipe(
+          without<InternalItem>(itemsToDelete),
+          ramdaMap<InternalItem, InternalItem>(
+            ifElse(
+              replaceMap.has.bind(replaceMap),
+              replaceMap.get.bind(replaceMap),
+              identity
+            )
+          ),
+          concat(__, itemsToAppend)
+        )(buffer);
+      }, [])
     );
 
     return {
