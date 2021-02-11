@@ -10,8 +10,8 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import Grid from "./components/Grid.vue";
-import ProductItem from "./components/ProductItem.vue";
+import Grid from "./Grid.vue";
+import ProductItem from "./ProductItem.vue";
 
 export default defineComponent({
   name: "App",

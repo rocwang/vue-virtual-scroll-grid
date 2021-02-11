@@ -95,7 +95,7 @@ export default defineComponent({
       scroll$
     ).pipe(
       map(() => root.value.getBoundingClientRect().top),
-      map(pipe(min(0), Math.abs))
+      map(pipe(min<number>(0), Math.abs))
     );
 
     const resizeMeasure$: Observable<{
@@ -176,7 +176,7 @@ export default defineComponent({
             });
         }
       ),
-      scan((buffer, visibleItems) => {
+      scan((buffer: InternalItem[], visibleItems: InternalItem[]) => {
         const itemsToAdd = difference(visibleItems, buffer);
         const itemsFreeToUse = difference(buffer, visibleItems);
 
@@ -188,8 +188,8 @@ export default defineComponent({
         const itemsToAppend = difference(itemsToAdd, itemsToReplaceWith);
 
         return pipe(
-          without<InternalItem>(itemsToDelete),
-          ramdaMap<InternalItem, InternalItem>(
+          without(itemsToDelete),
+          ramdaMap(
             ifElse(
               replaceMap.has.bind(replaceMap),
               replaceMap.get.bind(replaceMap),
