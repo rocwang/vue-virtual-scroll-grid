@@ -1,14 +1,26 @@
 <template>
-  <Grid :items="items" v-slot="{ item, style }" :class="$style.grid">
-    <ProductItem
-      :text="item.toString(10)"
-      :class="$style.item"
-      :style="style"
-    />
+  <Grid
+    :length="1000"
+    :pageSize="20"
+    :pageProvider="pageProvider"
+    :class="$style.grid"
+  >
+    <template v-slot:placeholder="{ index, style }">
+      <ProductItem :index="index" :class="$style.item" :style="style" />
+    </template>
+    <template v-slot:default="{ item, style, index }">
+      <ProductItem
+        :index="index"
+        :item="item"
+        :class="$style.item"
+        :style="style"
+      />
+    </template>
   </Grid>
 </template>
 
 <script lang="ts">
+import { range } from "ramda";
 import { defineComponent } from "vue";
 import Grid from "./Grid.vue";
 import ProductItem from "./ProductItem.vue";
@@ -21,9 +33,20 @@ export default defineComponent({
   },
   setup() {
     return {
-      items: Array(1000)
-        .fill(null)
-        .map((item, index) => index),
+      pageProvider(pageNumber: number, pageSize: number): Promise<number[]> {
+        return new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve(
+                range(0, 1000).slice(
+                  pageNumber * pageSize,
+                  (pageNumber + 1) * pageSize
+                )
+              ),
+            3000
+          )
+        );
+      },
     };
   },
 });
@@ -44,7 +67,7 @@ body {
   grid-gap: 20px;
   grid-template-rows: 200px;
   grid-template-columns: repeat(2, 1fr);
-  place-items: center;
+  place-items: strech;
 }
 
 @media (min-width: 768px) {

@@ -1,15 +1,23 @@
 <template>
   <div
-    v-if="items.length > 0"
+    v-if="length > 0"
     ref="root"
     :class="$style.root"
     :style="{ height: `${contentHeight}px` }"
   >
     <div ref="grid" v-bind="$attrs">
-      <div :class="$style.probe" ref="probe">Probe</div>
+      <div :class="$style.probe" ref="probe"></div>
 
       <template v-for="(internalItem, index) in buffer" :key="index">
         <slot
+          v-if="internalItem.value === undefined"
+          name="placeholder"
+          :index="internalItem.index"
+          :style="internalItem.style"
+        />
+        <slot
+          v-else
+          name="default"
           :item="internalItem.value"
           :index="internalItem.index"
           :style="internalItem.style"
@@ -27,8 +35,16 @@ import {
   fromEventPattern,
   merge,
   Observable,
+  range,
 } from "rxjs";
-import { map, scan, startWith } from "rxjs/operators";
+import {
+  debounceTime,
+  map,
+  mergeMap,
+  scan,
+  startWith,
+  switchMap,
+} from "rxjs/operators";
 import { from, useObservable } from "@vueuse/rxjs";
 import {
   __,
@@ -37,16 +53,19 @@ import {
   identity,
   ifElse,
   map as ramdaMap,
+  memoizeWith,
   min,
   pipe,
   without,
   zip,
+  remove,
+  insertAll,
+  slice,
 } from "ramda";
-import { mapIndexed } from "ramda-adjunct";
 
-declare interface InternalItem {
+interface InternalItem {
   index: number;
-  value: any;
+  value: unknown | undefined;
   style?: { transform: string };
 }
 
@@ -54,22 +73,25 @@ export default defineComponent({
   name: "Grid",
   inheritAttrs: false,
   props: {
-    items: {
-      type: Array as PropType<any[]>,
+    length: {
+      type: Number as PropType<number>,
+      required: true,
+    },
+    pageProvider: {
+      type: Function as PropType<
+        (pageNumber: number, pageSize: number) => Promise<unknown[]>
+      >,
+      required: true,
+    },
+    pageSize: {
+      type: Number as PropType<number>,
       required: true,
     },
   },
   setup(props) {
     // region: rendering trigger streams
-
     // todo: on css changes
-
-    // on items change
-    const { items } = toRefs(props);
-    const items$: Observable<InternalItem[]> = from(items).pipe(
-      startWith(items.value as InternalItem[]),
-      map(mapIndexed((value, index) => ({ value, index })))
-    );
+    // todo: on props change
 
     // on resize
     const resize$ = fromEvent<UIEvent>(window, "resize", { passive: true });
@@ -125,26 +147,26 @@ export default defineComponent({
     );
     // endregion
 
-    const contentHeight$: Observable<number> = combineLatest([
-      resizeMeasure$,
-      items$,
-    ]).pipe(
+    const contentHeight$: Observable<number> = resizeMeasure$.pipe(
       map(
-        ([{ columns, rowGap, itemHeightWithGap }, items]) =>
-          itemHeightWithGap * Math.ceil(items.length / columns) - rowGap
+        ({ columns, rowGap, itemHeightWithGap }) =>
+          itemHeightWithGap * Math.ceil(props.length / columns) - rowGap
       )
     );
 
-    const buffer$: Observable<InternalItem[]> = combineLatest([
+    const pageProvider = memoizeWith(
+      (pageNumber, pageSize) => `${pageNumber},${pageSize}`,
+      props.pageProvider
+    );
+
+    const visibleItems$: Observable<InternalItem[]> = combineLatest([
       heightAboveWindow$,
       resizeMeasure$,
-      items$,
     ]).pipe(
-      map(
+      switchMap(
         ([
           heightAboveWindow,
-          { columns, rowGap, itemWidthWithGap, itemHeightWithGap },
-          items,
+          { columns, rowGap, itemHeightWithGap, itemWidthWithGap },
         ]) => {
           const rowsInView =
             itemHeightWithGap &&
@@ -157,25 +179,59 @@ export default defineComponent({
           const offset = rowsBeforeView * columns;
 
           const bufferedOffset = Math.max(offset - Math.floor(length / 2), 0);
-          const bufferedLength = Math.min(length * 2, items.length);
+          const bufferedLength = Math.min(length * 2);
 
-          // visible items
-          return items
-            .slice(
-              bufferedOffset,
-              Math.min(bufferedOffset + bufferedLength, items.length)
+          const startPage = Math.floor(bufferedOffset / props.pageSize);
+          const endPage = Math.ceil(
+            (bufferedOffset + bufferedLength) / props.pageSize
+          );
+          const numberOfPages = endPage - startPage;
+
+          // Using pagination to provide items progressively
+          return range(startPage, numberOfPages).pipe(
+            mergeMap((pageNumber) =>
+              from(pageProvider(pageNumber, props.pageSize)).pipe(
+                startWith(new Array(props.pageSize).fill(undefined)),
+                map((items: unknown[]) => ({
+                  localPageNumber: pageNumber - startPage,
+                  internalItems: items.map((value, localIndex) => {
+                    const index = pageNumber * props.pageSize + localIndex;
+                    const x = (index % columns) * itemWidthWithGap;
+                    const y = Math.floor(index / columns) * itemHeightWithGap;
+
+                    return {
+                      index,
+                      value,
+                      style: { transform: `translate(${x}px, ${y}px)` },
+                    } as InternalItem;
+                  }),
+                }))
+              )
+            ),
+            scan((visibleItems, { localPageNumber, internalItems }) => {
+              const result = pipe<
+                InternalItem[],
+                InternalItem[],
+                InternalItem[]
+              >(
+                remove(localPageNumber * props.pageSize, internalItems.length),
+                insertAll(localPageNumber * props.pageSize, internalItems)
+              )(visibleItems);
+              return result;
+            }, [] as InternalItem[]),
+            debounceTime(100),
+            map(
+              slice(
+                bufferedOffset % props.pageSize,
+                (bufferedOffset % props.pageSize) + bufferedLength
+              ) as (input: InternalItem[]) => InternalItem[]
             )
-            .map((item) => {
-              const x = (item.index % columns) * itemWidthWithGap;
-              const y = Math.floor(item.index / columns) * itemHeightWithGap;
-
-              return {
-                ...item,
-                style: { transform: `translate(${x}px, ${y}px)` },
-              };
-            });
+          );
         }
-      ),
+      )
+    );
+
+    const buffer$: Observable<InternalItem[]> = visibleItems$.pipe(
       scan((buffer: InternalItem[], visibleItems: InternalItem[]) => {
         const itemsToAdd = difference(visibleItems, buffer);
         const itemsFreeToUse = difference(buffer, visibleItems);
@@ -229,5 +285,9 @@ export default defineComponent({
   z-index: -1;
   place-self: stretch;
   background-color: lightgray;
+}
+
+.probe::before {
+  content: "Probe";
 }
 </style>

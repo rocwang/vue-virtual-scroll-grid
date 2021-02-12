@@ -1,5 +1,12 @@
 <template>
-  <div :class="$style.root">{{ text }}</div>
+  <div :class="$style.root">
+    <div v-if="item === undefined">Placeholder {{ index }}</div>
+    <img
+      v-else
+      :src="`https://picsum.photos/seed/img${index}/300/200`"
+      :alt="`Image ${index}`"
+    />
+  </div>
 </template>
 
 <script lang="ts">
@@ -8,9 +15,13 @@ import { defineComponent, PropType } from "vue";
 export default defineComponent({
   name: "ProductItem",
   props: {
-    text: {
-      type: String as PropType<string>,
+    index: {
+      type: Number as PropType<number>,
       required: true,
+    },
+    item: {
+      type: Number as PropType<number>,
+      required: false,
     },
   },
 });
@@ -24,7 +35,5 @@ export default defineComponent({
   flex-flow: row nowrap;
   justify-content: center;
   align-items: center;
-  width: 100px;
-  height: 100px;
 }
 </style>
