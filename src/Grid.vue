@@ -39,6 +39,7 @@ import {
 } from "rxjs";
 import {
   debounceTime,
+  distinctUntilChanged,
   map,
   mergeMap,
   scan,
@@ -61,6 +62,7 @@ import {
   remove,
   insertAll,
   slice,
+  equals,
 } from "ramda";
 
 interface InternalItem {
@@ -117,6 +119,7 @@ export default defineComponent({
       scroll$
     ).pipe(
       map(() => root.value.getBoundingClientRect().top),
+      distinctUntilChanged(),
       map(pipe(min<number>(0), Math.abs))
     );
 
@@ -138,6 +141,13 @@ export default defineComponent({
           itemWidth: probe.value.offsetWidth,
         };
       }),
+      distinctUntilChanged<{
+        colGap: number;
+        rowGap: number;
+        columns: number;
+        itemHeight: number;
+        itemWidth: number;
+      }>(equals),
       map(({ colGap, rowGap, columns, itemHeight, itemWidth }) => ({
         rowGap,
         columns,
@@ -163,7 +173,7 @@ export default defineComponent({
       heightAboveWindow$,
       resizeMeasure$,
     ]).pipe(
-      switchMap(
+      map(
         ([
           heightAboveWindow,
           { columns, rowGap, itemHeightWithGap, itemWidthWithGap },
@@ -177,7 +187,6 @@ export default defineComponent({
             itemHeightWithGap &&
             Math.floor((heightAboveWindow + rowGap) / itemHeightWithGap);
           const offset = rowsBeforeView * columns;
-
           const bufferedOffset = Math.max(offset - Math.floor(length / 2), 0);
           const bufferedLength = Math.min(length * 2);
 
@@ -187,6 +196,36 @@ export default defineComponent({
           );
           const numberOfPages = endPage - startPage;
 
+          return {
+            columns,
+            bufferedOffset,
+            bufferedLength,
+            startPage,
+            numberOfPages,
+            itemWidthWithGap,
+            itemHeightWithGap,
+          };
+        }
+      ),
+      distinctUntilChanged<{
+        columns: number;
+        bufferedOffset: number;
+        bufferedLength: number;
+        startPage: number;
+        numberOfPages: number;
+        itemWidthWithGap: number;
+        itemHeightWithGap: number;
+      }>(equals),
+      switchMap(
+        ({
+          columns,
+          bufferedOffset,
+          bufferedLength,
+          startPage,
+          numberOfPages,
+          itemWidthWithGap,
+          itemHeightWithGap,
+        }) => {
           // Using pagination to provide items progressively
           return range(startPage, numberOfPages).pipe(
             mergeMap((pageNumber) =>
