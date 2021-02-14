@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { homedir } from "os";
 import { readFileSync, existsSync } from "fs";
+import { resolve } from "path";
 
 export default defineConfig({
   plugins: [vue()],
@@ -15,5 +16,23 @@ export default defineConfig({
       : false,
   },
   optimizeDeps: { exclude: ["prettier"] },
-  build: { cssCodeSplit: false },
+  build: {
+    cssCodeSplit: false,
+    lib: {
+      entry: resolve(__dirname, "src/Grid.vue"),
+      name: "VirtualScrollGrid",
+    },
+    rollupOptions: {
+      // make sure to externalize deps that shouldn't be bundled
+      // into your library
+      external: ["vue"],
+      output: {
+        // Provide global variables to use in the UMD build
+        // for externalized deps
+        globals: {
+          vue: "Vue",
+        },
+      },
+    },
+  },
 });

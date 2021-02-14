@@ -1,5 +1,16 @@
 {
   "name": "vue-virtual-scroll-grid",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/vue-virtual-scroll-grid.umd.js",
+  "module": "./dist/vue-virtual-scroll-grid.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-virtual-scroll-grid.es.js",
+      "require": "./dist/vue-virtual-scroll-grid.umd.js"
+    }
+  },
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
@@ -27,6 +38,6 @@
     "vite": "^2.0.0-beta.7"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=15"
   }
 }
