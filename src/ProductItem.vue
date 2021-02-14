@@ -1,7 +1,7 @@
 <template>
   <div :class="$style.root">
     <div v-if="item === undefined">Placeholder {{ index }}</div>
-    <div v-else>Item {{ item }}</div>
+    <div v-else>{{ item }}</div>
   </div>
 </template>
 

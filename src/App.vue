@@ -1,7 +1,7 @@
 <template>
   <Grid
     :length="1000"
-    :pageSize="20"
+    :pageSize="2"
     :pageProvider="pageProvider"
     :class="$style.grid"
   >
@@ -43,7 +43,7 @@ export default defineComponent({
                   (pageNumber + 1) * pageSize
                 )
               ),
-            3000
+            Math.round(3000 * Math.random())
           )
         );
       },

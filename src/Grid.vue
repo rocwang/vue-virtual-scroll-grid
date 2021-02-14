@@ -40,9 +40,12 @@ import {
   range,
 } from "rxjs";
 import {
+  distinct,
   distinctUntilChanged,
+  flatMap,
   map,
   mergeMap,
+  mergeScan,
   scan,
   shareReplay,
   startWith,
@@ -167,49 +170,13 @@ export default defineComponent({
       )
     );
 
-    const memoizedPageProvider: (
-      pageNumber: number,
-      pageSize: number
-    ) => Promise<unknown[]> = memoizeWith(
-      (pageNumber, pageSize) => `${pageNumber},${pageSize}`,
-      props.pageProvider
-    );
-
-    const loadPages: (
-      startPage: number,
-      numberOfPages: number
-    ) => Observable<unknown[]> = memoizeWith(
-      (startPage: number, numberOfPages: number) =>
-        `${startPage},${numberOfPages}`,
-      (startPage: number, numberOfPages: number) =>
-        range(startPage, numberOfPages).pipe(
-          mergeMap((pageNumber) =>
-            from(memoizedPageProvider(pageNumber, props.pageSize)).pipe(
-              startWith(new Array(props.pageSize).fill(undefined)),
-              map((items: unknown[]) => ({
-                localPageNumber: pageNumber - startPage,
-                items,
-              }))
-            )
-          ),
-          scan(
-            (visibleItems, { localPageNumber, items }) =>
-              pipe<unknown[], unknown[], unknown[]>(
-                remove(localPageNumber * props.pageSize, items.length),
-                insertAll(localPageNumber * props.pageSize, items)
-              )(visibleItems),
-            new Array(numberOfPages * props.pageSize).fill(
-              undefined
-            ) as unknown[]
-          ),
-          shareReplay(1)
-        )
-    );
-
-    const visibleItems$: Observable<InternalItem[]> = combineLatest([
-      heightAboveWindow$,
-      resizeMeasure$,
-    ]).pipe(
+    const bufferMeta$: Observable<{
+      columns: number;
+      bufferedOffset: number;
+      bufferedLength: number;
+      itemWidthWithGap: number;
+      itemHeightWithGap: number;
+    }> = combineLatest([heightAboveWindow$, resizeMeasure$]).pipe(
       map(
         ([
           heightAboveWindow,
@@ -242,43 +209,66 @@ export default defineComponent({
         bufferedLength: number;
         itemWidthWithGap: number;
         itemHeightWithGap: number;
-      }>(equals),
-      switchMap(
-        ({
-          columns,
-          bufferedOffset,
-          bufferedLength,
-          itemWidthWithGap,
-          itemHeightWithGap,
-        }) => {
-          const startPage = Math.floor(bufferedOffset / props.pageSize);
-          const endPage = Math.ceil(
-            (bufferedOffset + bufferedLength) / props.pageSize
-          );
-          const numberOfPages = endPage - startPage;
+      }>(equals)
+    );
 
-          return loadPages(startPage, numberOfPages).pipe(
-            map(
-              pipe(
-                slice(
-                  bufferedOffset % props.pageSize,
-                  (bufferedOffset % props.pageSize) + bufferedLength
-                ),
-                mapIndexed((value, localIndex) => {
-                  const index = bufferedOffset + localIndex;
-                  const x = (index % columns) * itemWidthWithGap;
-                  const y = Math.floor(index / columns) * itemHeightWithGap;
+    const allItems$: Observable<unknown[]> = bufferMeta$.pipe(
+      mergeMap(({ bufferedOffset, bufferedLength }) => {
+        const startPage = Math.floor(bufferedOffset / props.pageSize);
+        const endPage = Math.ceil(
+          Math.min(bufferedOffset + bufferedLength, props.length) /
+            props.pageSize
+        );
+        const numberOfPages = endPage - startPage;
 
-                  return {
-                    index,
-                    value,
-                    style: { transform: `translate(${x}px, ${y}px)` },
-                  } as InternalItem;
-                })
-              )
-            )
-          );
-        }
+        return range(startPage, numberOfPages);
+      }),
+      distinct(),
+      mergeMap((pageNumber) =>
+        from(props.pageProvider(pageNumber, props.pageSize)).pipe(
+          map((items) => ({ pageNumber, items }))
+        )
+      ),
+      scan(
+        (allItems, { pageNumber, items }) =>
+          pipe<unknown[], unknown[], unknown[]>(
+            remove(pageNumber * items.length, items.length),
+            insertAll(pageNumber * items.length, items)
+          )(allItems),
+        new Array(props.length).fill(undefined) as unknown[]
+      ),
+      startWith(new Array(props.length).fill(undefined) as unknown[])
+    );
+
+    const visibleItems$: Observable<InternalItem[]> = combineLatest([
+      bufferMeta$,
+      allItems$,
+    ]).pipe(
+      map(
+        ([
+          {
+            columns,
+            bufferedOffset,
+            bufferedLength,
+            itemWidthWithGap,
+            itemHeightWithGap,
+          },
+          allItems,
+        ]) =>
+          pipe(
+            slice(bufferedOffset, bufferedOffset + bufferedLength),
+            mapIndexed((value, localIndex) => {
+              const index = bufferedOffset + localIndex;
+              const x = (index % columns) * itemWidthWithGap;
+              const y = Math.floor(index / columns) * itemHeightWithGap;
+
+              return {
+                index,
+                value,
+                style: { transform: `translate(${x}px, ${y}px)` },
+              } as InternalItem;
+            })
+          )(allItems)
       )
     );
 
