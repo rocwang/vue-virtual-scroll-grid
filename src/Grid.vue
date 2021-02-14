@@ -42,14 +42,10 @@ import {
 import {
   distinct,
   distinctUntilChanged,
-  flatMap,
   map,
   mergeMap,
-  mergeScan,
   scan,
-  shareReplay,
   startWith,
-  switchMap,
 } from "rxjs/operators";
 import { from, useObservable } from "@vueuse/rxjs";
 import {
@@ -59,7 +55,6 @@ import {
   identity,
   ifElse,
   map as ramdaMap,
-  memoizeWith,
   min,
   pipe,
   without,
