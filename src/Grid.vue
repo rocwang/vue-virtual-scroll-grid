@@ -14,6 +14,7 @@
           name="placeholder"
           :index="internalItem.index"
           :style="internalItem.style"
+          :className="$style.item"
         />
         <slot
           v-else
@@ -21,6 +22,7 @@
           :item="internalItem.value"
           :index="internalItem.index"
           :style="internalItem.style"
+          :className="$style.item"
         />
       </template>
     </div>
@@ -28,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, PropType, ref, toRefs } from "vue";
+import { defineComponent, onMounted, PropType, ref } from "vue";
 import {
   combineLatest,
   fromEvent,
@@ -38,11 +40,11 @@ import {
   range,
 } from "rxjs";
 import {
-  debounceTime,
   distinctUntilChanged,
   map,
   mergeMap,
   scan,
+  shareReplay,
   startWith,
   switchMap,
 } from "rxjs/operators";
@@ -64,6 +66,7 @@ import {
   slice,
   equals,
 } from "ramda";
+import { mapIndexed } from "ramda-adjunct";
 
 interface InternalItem {
   index: number;
@@ -164,9 +167,43 @@ export default defineComponent({
       )
     );
 
-    const pageProvider = memoizeWith(
+    const memoizedPageProvider: (
+      pageNumber: number,
+      pageSize: number
+    ) => Promise<unknown[]> = memoizeWith(
       (pageNumber, pageSize) => `${pageNumber},${pageSize}`,
       props.pageProvider
+    );
+
+    const loadPages: (
+      startPage: number,
+      numberOfPages: number
+    ) => Observable<unknown[]> = memoizeWith(
+      (startPage: number, numberOfPages: number) =>
+        `${startPage},${numberOfPages}`,
+      (startPage: number, numberOfPages: number) =>
+        range(startPage, numberOfPages).pipe(
+          mergeMap((pageNumber) =>
+            from(memoizedPageProvider(pageNumber, props.pageSize)).pipe(
+              startWith(new Array(props.pageSize).fill(undefined)),
+              map((items: unknown[]) => ({
+                localPageNumber: pageNumber - startPage,
+                items,
+              }))
+            )
+          ),
+          scan(
+            (visibleItems, { localPageNumber, items }) =>
+              pipe<unknown[], unknown[], unknown[]>(
+                remove(localPageNumber * props.pageSize, items.length),
+                insertAll(localPageNumber * props.pageSize, items)
+              )(visibleItems),
+            new Array(numberOfPages * props.pageSize).fill(
+              undefined
+            ) as unknown[]
+          ),
+          shareReplay(1)
+        )
     );
 
     const visibleItems$: Observable<InternalItem[]> = combineLatest([
@@ -190,18 +227,10 @@ export default defineComponent({
           const bufferedOffset = Math.max(offset - Math.floor(length / 2), 0);
           const bufferedLength = Math.min(length * 2);
 
-          const startPage = Math.floor(bufferedOffset / props.pageSize);
-          const endPage = Math.ceil(
-            (bufferedOffset + bufferedLength) / props.pageSize
-          );
-          const numberOfPages = endPage - startPage;
-
           return {
             columns,
             bufferedOffset,
             bufferedLength,
-            startPage,
-            numberOfPages,
             itemWidthWithGap,
             itemHeightWithGap,
           };
@@ -211,8 +240,6 @@ export default defineComponent({
         columns: number;
         bufferedOffset: number;
         bufferedLength: number;
-        startPage: number;
-        numberOfPages: number;
         itemWidthWithGap: number;
         itemHeightWithGap: number;
       }>(equals),
@@ -221,49 +248,34 @@ export default defineComponent({
           columns,
           bufferedOffset,
           bufferedLength,
-          startPage,
-          numberOfPages,
           itemWidthWithGap,
           itemHeightWithGap,
         }) => {
-          // Using pagination to provide items progressively
-          return range(startPage, numberOfPages).pipe(
-            mergeMap((pageNumber) =>
-              from(pageProvider(pageNumber, props.pageSize)).pipe(
-                startWith(new Array(props.pageSize).fill(undefined)),
-                map((items: unknown[]) => ({
-                  localPageNumber: pageNumber - startPage,
-                  internalItems: items.map((value, localIndex) => {
-                    const index = pageNumber * props.pageSize + localIndex;
-                    const x = (index % columns) * itemWidthWithGap;
-                    const y = Math.floor(index / columns) * itemHeightWithGap;
+          const startPage = Math.floor(bufferedOffset / props.pageSize);
+          const endPage = Math.ceil(
+            (bufferedOffset + bufferedLength) / props.pageSize
+          );
+          const numberOfPages = endPage - startPage;
 
-                    return {
-                      index,
-                      value,
-                      style: { transform: `translate(${x}px, ${y}px)` },
-                    } as InternalItem;
-                  }),
-                }))
-              )
-            ),
-            scan((visibleItems, { localPageNumber, internalItems }) => {
-              const result = pipe<
-                InternalItem[],
-                InternalItem[],
-                InternalItem[]
-              >(
-                remove(localPageNumber * props.pageSize, internalItems.length),
-                insertAll(localPageNumber * props.pageSize, internalItems)
-              )(visibleItems);
-              return result;
-            }, [] as InternalItem[]),
-            debounceTime(100),
+          return loadPages(startPage, numberOfPages).pipe(
             map(
-              slice(
-                bufferedOffset % props.pageSize,
-                (bufferedOffset % props.pageSize) + bufferedLength
-              ) as (input: InternalItem[]) => InternalItem[]
+              pipe(
+                slice(
+                  bufferedOffset % props.pageSize,
+                  (bufferedOffset % props.pageSize) + bufferedLength
+                ),
+                mapIndexed((value, localIndex) => {
+                  const index = bufferedOffset + localIndex;
+                  const x = (index % columns) * itemWidthWithGap;
+                  const y = Math.floor(index / columns) * itemHeightWithGap;
+
+                  return {
+                    index,
+                    value,
+                    style: { transform: `translate(${x}px, ${y}px)` },
+                  } as InternalItem;
+                })
+              )
             )
           );
         }
@@ -328,5 +340,10 @@ export default defineComponent({
 
 .probe::before {
   content: "Probe";
+}
+
+.item {
+  grid-area: 1/1;
+  will-change: transform;
 }
 </style>

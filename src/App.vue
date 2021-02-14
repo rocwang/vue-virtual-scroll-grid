@@ -5,14 +5,14 @@
     :pageProvider="pageProvider"
     :class="$style.grid"
   >
-    <template v-slot:placeholder="{ index, style }">
-      <ProductItem :index="index" :class="$style.item" :style="style" />
+    <template v-slot:placeholder="{ index, style, className }">
+      <ProductItem :index="index" :class="className" :style="style" />
     </template>
-    <template v-slot:default="{ item, style, index }">
+    <template v-slot:default="{ item, style, index, className }">
       <ProductItem
         :index="index"
         :item="item"
-        :class="$style.item"
+        :class="className"
         :style="style"
       />
     </template>
@@ -98,10 +98,5 @@ body {
   .grid {
     grid-template-columns: repeat(6, 1fr);
   }
-}
-
-.item {
-  grid-area: 1/1;
-  will-change: transform;
 }
 </style>

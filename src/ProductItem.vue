@@ -1,11 +1,7 @@
 <template>
   <div :class="$style.root">
     <div v-if="item === undefined">Placeholder {{ index }}</div>
-    <img
-      v-else
-      :src="`https://picsum.photos/seed/img${index}/300/200`"
-      :alt="`Image ${index}`"
-    />
+    <div v-else>Item {{ item }}</div>
   </div>
 </template>
 
