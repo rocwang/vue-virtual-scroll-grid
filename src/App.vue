@@ -1,4 +1,10 @@
 <template>
+  <h1>
+    <a href="https://vue-virtual-scroll-grid.netlify.app/">
+      Vue Virtual Scroll Grid
+    </a>
+  </h1>
+
   <Grid
     :length="1000"
     :pageSize="2"
@@ -8,6 +14,7 @@
     <template v-slot:placeholder="{ index, style }">
       <ProductItem :index="index" :style="style" />
     </template>
+
     <template v-slot:default="{ item, style, index }">
       <ProductItem :index="index" :item="item" :style="style" />
     </template>

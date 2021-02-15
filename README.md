@@ -8,7 +8,7 @@ items (e.g. 1000+ items) as a grid in a performant way.
 ## Features
 
 - Use virtual-scrolling / windowing to render the items, so the number of DOM
-  nodes is low.
+  nodes is kept low.
 - Support using a paginated API to load the items in the background.
 - Support placeholders for unloaded items and loaded items are cached for better
   performance.
@@ -24,7 +24,6 @@ npm istall vue-virtual-scroll-grid
 ## Exmaple
 
 ```vue
-
 <template>
   <!-- length: The number of items in the list. -->
   <!-- pageSize: The number of items in a page from the item provider (e.g. a backend API). -->
@@ -159,6 +158,9 @@ following slot props:
 
 The `default` slot has an extra prop `item`, which is the loaded item that is
 used for rendering your item element/component.
+
+The `placeholder` slot is optional. If missing, the space of unloaded items will
+be blank until they are loaded.
 
 ## Development
 

@@ -14,7 +14,7 @@
   "bugs": {
     "url": "https://github.com/rocwang/vue-virtual-scroll-grid/issues"
   },
-  "homepage": "https://github.com/rocwang/vue-virtual-scroll-grid",
+  "homepage": "https://vue-virtual-scroll-grid.netlify.app/",
   "files": [
     "dist"
   ],
