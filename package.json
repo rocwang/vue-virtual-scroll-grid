@@ -25,9 +25,9 @@
       "import": "./dist/vue-virtual-scroll-grid.es.js",
       "require": "./dist/vue-virtual-scroll-grid.umd.js"
     },
-    "./dist/style.css":  "./dist/style.css"
+    "./dist/style.css": "./dist/style.css"
   },
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "scripts": {
     "serve": "vite preview",
