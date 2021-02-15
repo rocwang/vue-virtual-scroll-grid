@@ -31,37 +31,25 @@ export default defineComponent({
     Grid,
     ProductItem,
   },
-  setup() {
-    return {
-      pageProvider(pageNumber: number, pageSize: number): Promise<number[]> {
-        return new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve(
-                range(0, 1000).slice(
-                  pageNumber * pageSize,
-                  (pageNumber + 1) * pageSize
-                )
-              ),
-            Math.round(3000 * Math.random())
-          )
-        );
-      },
-    };
-  },
+  setup: () => ({
+    pageProvider: (pageNumber: number, pageSize: number): Promise<number[]> =>
+      new Promise((resolve) =>
+        setTimeout(
+          () =>
+            resolve(
+              range(0, 1000).slice(
+                pageNumber * pageSize,
+                (pageNumber + 1) * pageSize
+              )
+            ),
+          Math.round(3000 * Math.random())
+        )
+      ),
+  }),
 });
 </script>
 
 <style module>
-body {
-  margin: 0;
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
 .grid {
   display: grid;
   grid-gap: 20px;

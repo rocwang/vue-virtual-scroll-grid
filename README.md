@@ -1,17 +1,17 @@
 # Virtual Scroll Grid for Vue 3
 
-[Demo][demo]
-
 This is a reusable component for Vue 3 that renders a list with a huge number of
 items (e.g. 1000+ items) as a grid in a performant way.
+
+[Demo][demo]
 
 ## Features
 
 - Use virtual-scrolling / windowing to render the items, so the number of DOM
   nodes is low.
 - Support using a paginated API to load the items in the background.
-- Support placeholders for unloaded items and loaded items are cached for
-  better performance.
+- Support placeholders for unloaded items and loaded items are cached for better
+  performance.
 - Just use CSS grid to style your grid. Minimum styling opinions form the
   library.
 
@@ -24,6 +24,7 @@ npm istall vue-virtual-scroll-grid
 ## Exmaple
 
 ```vue
+
 <template>
   <!-- length: The number of items in the list. -->
   <!-- pageSize: The number of items in a page from the item provider (e.g. a backend API). -->
@@ -67,15 +68,6 @@ export default {
 <style>
 /* Import the style from the library */
 @import "vue-virtual-scroll-grid/dist/style.css";
-
-body {
-  margin: 0;
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
 
 .grid {
   display: grid;
@@ -138,6 +130,13 @@ body {
 </style>
 ```
 
+# Caveats
+
+The library does not require items have foreknown width and height, but do
+require them to be styled with the same width and height under a view. E.g. the
+items can be 200px x 200px when the view is under 768px and 300px x 500px above
+768px.
+
 ## Available Props
 
 ```ts
@@ -159,10 +158,10 @@ There are 2 scoped slots: `default` and `placeholder`. Both of them have the
 following slot props:
 
 - `index`: the index of current item within the list.
-- `style`: the style object provided by the library that need to be set on
-  the item element/component.
-- `class`: the class name provided by the library that need to be set on
-  the item element/component.
+- `style`: the style object provided by the library that need to be set on the
+  item element/component.
+- `class`: the class name provided by the library that need to be set on the
+  item element/component.
 
 The `default` slot has an extra prop `item`, which is the loaded item that is
 used for rendering your item element/component.
