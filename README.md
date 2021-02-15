@@ -165,9 +165,9 @@ The `placeholder` slot is optional. If missing, the space of unloaded items will
 be blank until they are loaded.
 
 The `probe` slot has no prop. It is used to measure the visual size of grid
-item. If not provided, you must set a fixed height to `grid-template-rows` on
-your CSS grid, or a fixed `height` on your item element/component, e.g. `200px`.
-Otherwise, the view won't be rendered properly.
+item. You can pass the same element/component for the `placeholder` slot. If
+not provided, you must set a fixed height to `grid-template-rows` on
+your CSS grid, e.g. `200px`. Otherwise, the view won't be rendered properly.
 
 ## Development
 
