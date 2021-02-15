@@ -31,16 +31,12 @@ npm istall vue-virtual-scroll-grid
   <Grid :length="1000" :pageSize="2" :pageProvider="pageProvider" class="grid">
     <!-- When the item is not loaded, a placeholder is rendered -->
     <template v-slot:placeholder="{ index, style }">
-      <div class="item" :style="style">
-        Placeholder {{ index }}
-      </div>
+      <div class="item" :style="style">Placeholder {{ index }}</div>
     </template>
 
     <!-- Render a loaded item -->
     <template v-slot:default="{ item, style, index }">
-      <div class="item" :style="style">
-        {{ item }} {{ index }}
-      </div>
+      <div class="item" :style="style">{{ item }} {{ index }}</div>
     </template>
   </Grid>
 </template>
@@ -49,9 +45,9 @@ npm istall vue-virtual-scroll-grid
 import Grid from "vue-virtual-scroll-grid";
 
 export default {
-  name      : "App",
-  components: {Grid},
-  setup     : () => ({
+  name: "App",
+  components: { Grid },
+  setup: () => ({
     // Return items for the given page after a 0-3 second randomly
     pageProvider: (pageNumber, pageSize) =>
       new Promise((resolve) =>
@@ -140,27 +136,38 @@ interface Props {
   // must be an integer and greater than or equal to 0.
   length: number;
   // The callback that returns a page of items as a promise.
-  pageProvider: (pageNumber: number, pageSize: number) => Promise<unknown[]>
+  pageProvider: (pageNumber: number, pageSize: number) => Promise<unknown[]>;
   // The number of items in a page from the item provider (e.g. a backend API),
   // must be an integer and greater than or equal to 0.
   pageSize: number;
 }
 ```
 
-## Available Scoped Slots
+## Available Slots
 
-There are 2 scoped slots: `default` and `placeholder`. Both of them have the
-following slot props:
+There are 3 scoped slots: `default`, `placeholder` and `probe`.
+
+Props of the `default` slot:
+
+- `item`: the loaded item that is used for rendering your item
+  element/component.
+- `index`: the index of current item within the list.
+- `style`: the style object provided by the library that need to be set on the
+  item element/component.
+
+Props of the `placeholder` slot:
 
 - `index`: the index of current item within the list.
 - `style`: the style object provided by the library that need to be set on the
   item element/component.
 
-The `default` slot has an extra prop `item`, which is the loaded item that is
-used for rendering your item element/component.
-
 The `placeholder` slot is optional. If missing, the space of unloaded items will
 be blank until they are loaded.
+
+The `probe` slot has no prop. It is used to measure the visual size of grid
+item. If not provided, you must set a fixed height to `grid-template-rows` on
+your CSS grid, or a fixed `height` on your item element/component, e.g. `200px`.
+Otherwise, the view won't be rendered properly.
 
 ## Development
 
