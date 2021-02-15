@@ -15,6 +15,12 @@ items (e.g. 1000+ items) as a grid in a performant way.
 - Just use CSS grid to style your grid. Minimum styling opinions form the
   library.
 
+## Install
+
+```shell
+npm istall vue-virtual-scroll-grid
+```
+
 ## Exmaple
 
 ```vue
@@ -59,6 +65,7 @@ export default {
 </script>
 
 <style>
+/* Import the style from the library */
 @import "vue-virtual-scroll-grid/dist/style.css";
 
 body {
@@ -143,6 +150,20 @@ interface Props {
   pageSize: number;
 }
 ```
+
+## Available Scoped Slots
+
+There are 2 scoped slots: `default` and `placeholder`. Both of them have the
+following slot props:
+
+- `index`: the index of current item within the list.
+- `style`: the style object provided by the library that need to be set on
+  the item element/component.
+- `class`: the class name provided by the library that need to be set on
+  the item element/component.
+
+The `default` slot has an extra prop `item`, which is the loaded item that is
+used for rendering your item element/component.
 
 ## Development
 
