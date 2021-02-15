@@ -21,7 +21,7 @@ items (e.g. 1000+ items) as a grid in a performant way.
 npm istall vue-virtual-scroll-grid
 ```
 
-## Exmaple
+## Example
 
 ```vue
 <template>
