@@ -80,6 +80,7 @@ export default defineComponent({
     length: {
       type: Number as PropType<number>,
       required: true,
+      validator: (value: number) => Number.isInteger(value) && value >= 0,
     },
     // The callback that returns a page of items as a promise.
     pageProvider: {
@@ -92,6 +93,7 @@ export default defineComponent({
     pageSize: {
       type: Number as PropType<number>,
       required: true,
+      validator: (value: number) => Number.isInteger(value) && value >= 0,
     },
   },
   setup(props) {
