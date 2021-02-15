@@ -76,16 +76,19 @@ export default defineComponent({
   name: "Grid",
   inheritAttrs: false,
   props: {
+    // The number of items in the list.
     length: {
       type: Number as PropType<number>,
       required: true,
     },
+    // The callback that returns a page of items as a promise.
     pageProvider: {
       type: Function as PropType<
         (pageNumber: number, pageSize: number) => Promise<unknown[]>
       >,
       required: true,
     },
+    // The number of items in a page from the item provider (e.g. a backend API).
     pageSize: {
       type: Number as PropType<number>,
       required: true,
