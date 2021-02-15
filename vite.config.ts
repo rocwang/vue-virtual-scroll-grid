@@ -17,9 +17,8 @@ export default ({ mode }: ConfigEnv): UserConfig => {
         : false,
     },
     optimizeDeps: { exclude: ["prettier"] },
-    build: {
-      cssCodeSplit: false,
-      ...(mode === "demo"
+    build:
+      mode === "demo"
         ? {}
         : {
             lib: {
@@ -38,7 +37,6 @@ export default ({ mode }: ConfigEnv): UserConfig => {
                 },
               },
             },
-          }),
-    },
+          },
   };
 };

@@ -5,16 +5,11 @@
     :pageProvider="pageProvider"
     :class="$style.grid"
   >
-    <template v-slot:placeholder="{ index, style, className }">
-      <ProductItem :index="index" :class="className" :style="style" />
+    <template v-slot:placeholder="{ index, style }">
+      <ProductItem :index="index" :style="style" />
     </template>
-    <template v-slot:default="{ item, style, index, className }">
-      <ProductItem
-        :index="index"
-        :item="item"
-        :class="className"
-        :style="style"
-      />
+    <template v-slot:default="{ item, style, index }">
+      <ProductItem :index="index" :item="item" :style="style" />
     </template>
   </Grid>
 </template>
@@ -27,10 +22,7 @@ import ProductItem from "./ProductItem.vue";
 
 export default defineComponent({
   name: "App",
-  components: {
-    Grid,
-    ProductItem,
-  },
+  components: { Grid, ProductItem },
   setup: () => ({
     pageProvider: (pageNumber: number, pageSize: number): Promise<number[]> =>
       new Promise((resolve) =>
@@ -55,7 +47,7 @@ export default defineComponent({
   grid-gap: 20px;
   grid-template-rows: 200px;
   grid-template-columns: repeat(2, 1fr);
-  place-items: strech;
+  place-items: stretch;
 }
 
 @media (min-width: 768px) {

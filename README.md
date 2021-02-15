@@ -31,15 +31,15 @@ npm istall vue-virtual-scroll-grid
   <!-- pageProvider: The callback that returns a page of items as a promise. -->
   <Grid :length="1000" :pageSize="2" :pageProvider="pageProvider" class="grid">
     <!-- When the item is not loaded, a placeholder is rendered -->
-    <template v-slot:placeholder="{ index, style, className }">
-      <div :class="[className, 'item']" :style="style">
+    <template v-slot:placeholder="{ index, style }">
+      <div class="item" :style="style">
         Placeholder {{ index }}
       </div>
     </template>
 
     <!-- Render a loaded item -->
-    <template v-slot:default="{ item, style, index, className }">
-      <div :class="[className, 'item']" :style="style">
+    <template v-slot:default="{ item, style, index }">
+      <div class="item" :style="style">
         {{ item }} {{ index }}
       </div>
     </template>
@@ -66,15 +66,12 @@ export default {
 </script>
 
 <style>
-/* Import the style from the library */
-@import "vue-virtual-scroll-grid/dist/style.css";
-
 .grid {
   display: grid;
   grid-gap: 20px;
   grid-template-rows: 200px;
   grid-template-columns: repeat(2, 1fr);
-  place-items: strech;
+  place-items: stretch;
 }
 
 @media (min-width: 768px) {
@@ -123,7 +120,6 @@ export default {
   box-sizing: border-box;
   border: 1px solid black;
   display: flex;
-  flex-flow: row nowrap;
   justify-content: center;
   align-items: center;
 }
@@ -159,8 +155,6 @@ following slot props:
 
 - `index`: the index of current item within the list.
 - `style`: the style object provided by the library that need to be set on the
-  item element/component.
-- `class`: the class name provided by the library that need to be set on the
   item element/component.
 
 The `default` slot has an extra prop `item`, which is the loaded item that is

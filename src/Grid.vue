@@ -2,11 +2,24 @@
   <div
     v-if="length > 0"
     ref="root"
-    :class="$style.root"
-    :style="{ height: `${contentHeight}px` }"
+    :style="{
+      height: `${contentHeight}px`,
+      minHeight: '100%',
+      overflow: 'hidden',
+    }"
   >
     <div ref="grid" v-bind="$attrs">
-      <div :class="$style.probe" ref="probe"></div>
+      <div
+        :style="{
+          opacity: 0,
+          visibility: 'hidden',
+          gridArea: '1/1',
+          pointerEvents: 'none',
+          zIndex: '-1',
+          placeSelf: 'stretch',
+        }"
+        ref="probe"
+      />
 
       <template v-for="(internalItem, index) in buffer" :key="index">
         <slot
@@ -14,7 +27,6 @@
           name="placeholder"
           :index="internalItem.index"
           :style="internalItem.style"
-          :className="$style.item"
         />
         <slot
           v-else
@@ -22,7 +34,6 @@
           :item="internalItem.value"
           :index="internalItem.index"
           :style="internalItem.style"
-          :className="$style.item"
         />
       </template>
     </div>
@@ -69,7 +80,7 @@ import { mapIndexed } from "ramda-adjunct";
 interface InternalItem {
   index: number;
   value: unknown | undefined;
-  style?: { transform: string };
+  style?: { transform: string; gridArea: string };
 }
 
 export default defineComponent({
@@ -265,7 +276,10 @@ export default defineComponent({
               return {
                 index,
                 value,
-                style: { transform: `translate(${x}px, ${y}px)` },
+                style: {
+                  gridArea: "1/1",
+                  transform: `translate(${x}px, ${y}px)`,
+                },
               } as InternalItem;
             })
           )(allItems)
@@ -311,24 +325,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style module>
-.root {
-  min-height: 100%;
-  overflow: hidden;
-}
-
-.probe {
-  opacity: 0;
-  visibility: hidden;
-  grid-area: 1/1;
-  pointer-events: none;
-  z-index: -1;
-  place-self: stretch;
-}
-
-.item {
-  grid-area: 1/1;
-  will-change: transform;
-}
-</style>
