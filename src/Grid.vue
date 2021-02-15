@@ -314,17 +314,12 @@ export default defineComponent({
 }
 
 .probe {
-  /*opacity: 0;*/
-  /*visibility: hidden;*/
+  opacity: 0;
+  visibility: hidden;
   grid-area: 1/1;
   pointer-events: none;
   z-index: -1;
   place-self: stretch;
-  background-color: lightgray;
-}
-
-.probe::before {
-  content: "Probe";
 }
 
 .item {
