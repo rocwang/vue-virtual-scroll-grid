@@ -33,7 +33,8 @@
     "serve": "vite preview",
     "build": "vite build",
     "dev": "vite",
-    "lint": "vuedx-typecheck ."
+    "lint": "vuedx-typecheck .",
+    "version": "npm run build"
   },
   "dependencies": {
     "@vueuse/rxjs": "^4.1.0",
