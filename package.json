@@ -1,5 +1,20 @@
 {
   "name": "vue-virtual-scroll-grid",
+  "author": "Roc Wong <roc@kiwiberry.nz> (https://kiwiberry.nz/)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rocwang/vue-virtual-scroll-grid.git"
+  },
+  "keywords": [
+    "vue",
+    "windowing",
+    "virtual scroll",
+    "grid"
+  ],
+  "bugs": {
+    "url": "https://github.com/rocwang/vue-virtual-scroll-grid/issues"
+  },
+  "homepage": "https://github.com/rocwang/vue-virtual-scroll-grid",
   "files": [
     "dist"
   ],
@@ -9,9 +24,10 @@
     ".": {
       "import": "./dist/vue-virtual-scroll-grid.es.js",
       "require": "./dist/vue-virtual-scroll-grid.umd.js"
-    }
+    },
+    "./dist/style.css":  "./dist/style.css"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "scripts": {
     "serve": "vite preview",
