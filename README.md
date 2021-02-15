@@ -121,7 +121,7 @@ export default {
 </style>
 ```
 
-# Caveats
+## Caveats
 
 The library does not require items have foreknown width and height, but do
 require them to be styled with the same width and height under a view. E.g. the
