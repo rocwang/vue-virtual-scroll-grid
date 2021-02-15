@@ -19,7 +19,9 @@
           placeSelf: 'stretch',
         }"
         ref="probe"
-      />
+      >
+        <slot name="probe" />
+      </div>
 
       <template v-for="(internalItem, index) in buffer" :key="index">
         <slot
