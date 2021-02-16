@@ -1,0 +1,5 @@
+- [ ] Unit test
+- [ ] Example for UMD build
+- [ ] Refresh on prop change
+- [ ] Refresh on css change
+- [ ] Try out StoryBook
