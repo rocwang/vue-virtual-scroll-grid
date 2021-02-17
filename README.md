@@ -138,7 +138,7 @@ interface Props {
   // The callback that returns a page of items as a promise.
   pageProvider: (pageNumber: number, pageSize: number) => Promise<unknown[]>;
   // The number of items in a page from the item provider (e.g. a backend API),
-  // must be an integer and greater than or equal to 0.
+  // must be an integer and greater than 0.
   pageSize: number;
 }
 ```

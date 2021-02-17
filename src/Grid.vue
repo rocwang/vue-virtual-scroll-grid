@@ -15,7 +15,7 @@
           visibility: 'hidden',
           gridArea: '1/1',
           pointerEvents: 'none',
-          zIndex: '-1',
+          zIndex: -1,
           placeSelf: 'stretch',
         }"
         ref="probe"
@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, PropType, ref } from "vue";
+import { defineComponent, onMounted, PropType, ref, watchEffect } from "vue";
 import {
   combineLatest,
   fromEvent,
@@ -58,7 +58,9 @@ import {
   map,
   mergeMap,
   scan,
-  startWith,
+  share,
+  tap,
+  withLatestFrom,
 } from "rxjs/operators";
 import { from, useObservable } from "@vueuse/rxjs";
 import {
@@ -76,8 +78,10 @@ import {
   insertAll,
   slice,
   equals,
+  prop,
+  gt,
 } from "ramda";
-import { mapIndexed } from "ramda-adjunct";
+import { concatRight, mapIndexed, sliceTo } from "ramda-adjunct";
 
 interface InternalItem {
   index: number;
@@ -106,13 +110,24 @@ export default defineComponent({
     pageSize: {
       type: Number as PropType<number>,
       required: true,
-      validator: (value: number) => Number.isInteger(value) && value >= 0,
+      validator: (value: number) => Number.isInteger(value) && value >= 1,
     },
   },
   setup(props) {
+    const length$ = new Observable<number>((subscriber) =>
+      watchEffect(() => subscriber.next(props.length))
+    );
+
+    const pageSize$ = new Observable<number>((subscriber) =>
+      watchEffect(() => subscriber.next(props.pageSize))
+    );
+
+    const pageProvider$ = new Observable<
+      (pageNumber: number, pageSize: number) => Promise<unknown[]>
+    >((subscriber) => watchEffect(() => subscriber.next(props.pageProvider)));
+
     // region: rendering trigger streams
     // todo: on css changes
-    // todo: on props change
 
     // on resize
     const resize$ = fromEvent<UIEvent>(window, "resize", { passive: true });
@@ -124,7 +139,7 @@ export default defineComponent({
     });
 
     // on mounted
-    const mount$ = fromEventPattern<undefined>(onMounted);
+    const mount$ = fromEventPattern<undefined>(onMounted).pipe(share());
     // endregion
 
     // region: measure on the visual grid
@@ -176,10 +191,13 @@ export default defineComponent({
     );
     // endregion
 
-    const contentHeight$: Observable<number> = resizeMeasure$.pipe(
+    const contentHeight$: Observable<number> = combineLatest([
+      resizeMeasure$,
+      length$,
+    ]).pipe(
       map(
-        ({ columns, rowGap, itemHeightWithGap }) =>
-          itemHeightWithGap * Math.ceil(props.length / columns) - rowGap
+        ([{ columns, rowGap, itemHeightWithGap }, length]) =>
+          itemHeightWithGap * Math.ceil(length / columns) - rowGap
       )
     );
 
@@ -225,32 +243,56 @@ export default defineComponent({
       }>(equals)
     );
 
-    const allItems$: Observable<unknown[]> = bufferMeta$.pipe(
-      mergeMap(({ bufferedOffset, bufferedLength }) => {
-        const startPage = Math.floor(bufferedOffset / props.pageSize);
+    const pageNumber$: Observable<number> = combineLatest([
+      bufferMeta$,
+      length$,
+      pageSize$,
+      pageProvider$,
+    ]).pipe(
+      mergeMap(([{ bufferedOffset, bufferedLength }, length, pageSize]) => {
+        const startPage = Math.floor(bufferedOffset / pageSize);
         const endPage = Math.ceil(
-          Math.min(bufferedOffset + bufferedLength, props.length) /
-            props.pageSize
+          Math.min(bufferedOffset + bufferedLength, length) / pageSize
         );
         const numberOfPages = endPage - startPage;
 
         return range(startPage, numberOfPages);
       }),
-      distinct(),
-      mergeMap((pageNumber) =>
-        from(props.pageProvider(pageNumber, props.pageSize)).pipe(
-          map((items) => ({ pageNumber, items }))
-        )
-      ),
+      distinct(identity, merge(pageSize$, pageProvider$))
+    );
+
+    const itemsByPage$: Observable<{
+      pageNumber: number;
+      items: unknown[];
+    }> = pageNumber$.pipe(
+      withLatestFrom(pageSize$, pageProvider$),
+      mergeMap(([pageNumber, pageSize, pageProvider]) =>
+        pageProvider(pageNumber, pageSize).then((items) => ({
+          pageNumber,
+          items,
+        }))
+      )
+    );
+
+    const allItems$: Observable<unknown[]> = combineLatest([
+      itemsByPage$,
+      length$,
+    ]).pipe(
       scan(
-        (allItems, { pageNumber, items }) =>
-          pipe<unknown[], unknown[], unknown[]>(
+        (allItems: unknown[], [{ pageNumber, items }, length]) =>
+          pipe(
+            ifElse(
+              pipe(prop("length"), gt(length)),
+              concatRight(
+                new Array(Math.max(length - allItems.length, 0)).fill(undefined)
+              ),
+              sliceTo(length)
+            ),
             remove(pageNumber * items.length, items.length),
             insertAll(pageNumber * items.length, items)
           )(allItems),
-        new Array(props.length).fill(undefined) as unknown[]
-      ),
-      startWith(new Array(props.length).fill(undefined) as unknown[])
+        []
+      )
     );
 
     const visibleItems$: Observable<InternalItem[]> = combineLatest([

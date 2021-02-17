@@ -2,46 +2,46 @@
 *,
 *::before,
 *::after {
-  box-sizing : inherit;
+  box-sizing: inherit;
 }
 
 html {
-  -ms-text-size-adjust        : 100%;
-  -webkit-text-size-adjust    : 100%;
-  -webkit-font-smoothing      : antialiased;
-  -moz-osx-font-smoothing     : grayscale;
-  -webkit-tap-highlight-color : transparent;
-  font-size                   : 10px;
-  box-sizing                  : border-box;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  font-size: 10px;
+  box-sizing: border-box;
 }
 
 body {
-  margin           : 0;
-  line-height      : 1;
-  font-family      : system-ui, sans-serif;
-  font-size        : 1.4rem;
-  font-weight      : 400;
-  color            : #000;
-  background-color : #fff;
+  margin: 0;
+  line-height: 1;
+  font-family: system-ui, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: #000;
+  background-color: #fff;
 }
 
 main {
-  display : block;
+  display: block;
 }
 
 iframe {
-  border : 0;
+  border: 0;
 }
 
 ul,
 ol {
-  margin-top    : 0;
-  margin-bottom : 0;
-  padding-left  : 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-left: 0;
 }
 
 li {
-  display : block;
+  display: block;
 }
 
 h1,
@@ -50,179 +50,164 @@ h3,
 h4,
 h5,
 h6 {
-  margin-top    : 0;
-  margin-bottom : 0;
-  font-size     : inherit;
-  font-weight   : inherit;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 p {
-  margin-top    : 0;
-  margin-bottom : 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 strong {
-  font-weight : bold;
+  font-weight: bold;
 }
 
 figure {
-  margin : 0;
+  margin: 0;
 }
 
 img {
-  border         : 0;
-  max-width      : 100%;
-  height         : auto;
-  vertical-align : middle;
-  display        : block;
+  border: 0;
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+  display: block;
 }
 
 svg {
-  vertical-align : middle;
-  display        : block;
+  vertical-align: middle;
+  display: block;
 }
 
 a {
-  text-decoration : none;
-  color           : inherit;
-  touch-action    : manipulation;
+  text-decoration: none;
+  color: inherit;
+  touch-action: manipulation;
 }
 
 fieldset {
-  margin       : 0;
-  padding      : 0;
-  border-style : none;
+  margin: 0;
+  padding: 0;
+  border-style: none;
 }
 
 button {
-  user-select            : none;
-  -webkit-appearance     : none;
-  -moz-appearance        : none;
-  appearance             : none;
-  border                 : 0;
-  margin                 : 0;
-  padding                : 0;
-  text-align             : center;
-  text-transform         : inherit;
-  line-height            : 1;
-  -webkit-font-smoothing : inherit;
-  letter-spacing         : inherit;
-  background             : none;
-  cursor                 : pointer;
-  overflow               : visible;
-  touch-action           : manipulation;
-  display                : block;
-  text-decoration        : none;
-  vertical-align         : middle;
-  white-space            : nowrap;
-  font-family            : inherit;
-  color                  : inherit;
+  user-select: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  text-transform: inherit;
+  line-height: 1;
+  -webkit-font-smoothing: inherit;
+  letter-spacing: inherit;
+  background: none;
+  cursor: pointer;
+  overflow: visible;
+  touch-action: manipulation;
+  display: block;
+  text-decoration: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-family: inherit;
+  color: inherit;
 }
 
 button:focus {
-  outline : none;
+  outline: none;
 }
 
 label {
-  display : block;
+  display: block;
 }
 
 label[for] {
-  touch-action : manipulation;
-  cursor       : pointer;
+  touch-action: manipulation;
+  cursor: pointer;
 }
 
 input {
-  -webkit-appearance : none;
-  -moz-appearance    : none;
-  appearance         : none;
-  display            : block;
-  line-height        : 1;
-  border-style       : initial;
-  touch-action       : manipulation;
-  border-radius      : 0;
-  max-width          : 100%;
-  padding            : 0;
-  background-color   : transparent;
-  font-family        : inherit;
-}
-
-input[type='radio'] {
-  -webkit-appearance : radio;
-  -moz-appearance    : radio;
-  appearance         : radio;
-}
-
-input[type='checkbox'] {
-  -webkit-appearance : checkbox;
-  -moz-appearance    : checkbox;
-  appearance         : checkbox;
+  display: block;
+  line-height: 1;
+  border-style: initial;
+  touch-action: manipulation;
+  border-radius: 0;
+  max-width: 100%;
+  padding: 0;
+  background-color: transparent;
+  font-family: inherit;
 }
 
 input[type="submit"] {
-  cursor : pointer;
+  cursor: pointer;
 }
 
 input:focus {
-  outline : none;
+  outline: none;
 }
 
 input[disabled] {
-  cursor : default;
+  cursor: default;
 }
 
 select {
-  -webkit-appearance : none;
-  -moz-appearance    : none;
-  appearance         : none;
-  touch-action       : manipulation;
-  border-radius      : 0;
-  max-width          : 100%;
-  background-color   : transparent;
-  font-family        : inherit;
-  line-height        : 1;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+  border-radius: 0;
+  max-width: 100%;
+  background-color: transparent;
+  font-family: inherit;
+  line-height: 1;
 }
 
 select:focus {
-  outline : none;
+  outline: none;
 }
 
 select[disabled] {
-  cursor : default;
+  cursor: default;
 }
 
 textarea {
-  -webkit-appearance : none;
-  -moz-appearance    : none;
-  appearance         : none;
-  touch-action       : manipulation;
-  border-radius      : 0;
-  max-width          : 100%;
-  font-family        : inherit;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+  border-radius: 0;
+  max-width: 100%;
+  font-family: inherit;
 }
 
 textarea:focus {
-  outline : none;
+  outline: none;
 }
 
 textarea[disabled] {
-  cursor : default;
+  cursor: default;
 }
 
 table {
-  border-collapse : collapse;
+  border-collapse: collapse;
 }
 
 th {
-  font-weight : 400;
-  padding     : 0;
-  text-align  : left;
+  font-weight: 400;
+  padding: 0;
+  text-align: left;
 }
 
 td {
-  padding : 0;
+  padding: 0;
 }
 
 address {
-  font-style : normal;
+  font-style: normal;
 }

@@ -1,18 +1,8 @@
 <template>
-  <h1 :class="$style.title">
-    <a
-      href="https://github.com/rocwang/vue-virtual-scroll-grid"
-      :class="$style.link"
-      target="_blank"
-      rel="noreferrer"
-    >
-      Vue Virtual Scroll Grid
-    </a>
-  </h1>
-
+  <Header />
   <Grid
-    :length="1000"
-    :pageSize="40"
+    :length="length"
+    :pageSize="pageSize"
     :pageProvider="pageProvider"
     :class="$style.grid"
   >
@@ -20,7 +10,7 @@
       <ProductItem sizes="(min-width: 768px) 360px, 290px" />
     </template>
 
-    <template v-slot:placeholder="{ index, style }">
+    <template v-slot:placeholder="{ style }">
       <ProductItem :style="style" sizes="(min-width: 768px) 360px, 290px" />
     </template>
 
@@ -30,7 +20,6 @@
         :price="item.price * 100"
         :compare-at-price="item.compare_at_price * 100"
         :published-at="new Date(item.published_at)"
-        :class="bem('item')"
         :style="style"
         :master-src="item.product_image"
         :initial-alt-master-src="true"
@@ -47,26 +36,17 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import Grid from "../Grid.vue";
+import Header from "./Header.vue";
 import ProductItem from "./ProductItem.vue";
-import algoliasearch from "algoliasearch";
-import { prop } from "ramda";
+import { length, pageSize, pageProvider } from "./store";
 
 export default defineComponent({
   name: "App",
-  components: { Grid, ProductItem },
+  components: { Grid, ProductItem, Header },
   setup: () => ({
-    pageProvider: (pageNumber: number, pageSize: number): Promise<Object[]> =>
-      algoliasearch(
-        import.meta.env.VITE_APP_ID,
-        import.meta.env.VITE_SEARCH_ONLY_API_KEK
-      )
-        .initIndex("shopify_products")
-        .search("", {
-          distinct: true,
-          hitsPerPage: pageSize,
-          page: pageNumber,
-        })
-        .then(prop("hits")),
+    length,
+    pageSize,
+    pageProvider,
   }),
 });
 </script>
@@ -92,27 +72,11 @@ export default defineComponent({
 body {
   color: var(--color-black);
   background-color: var(--color-white);
-  padding: 2rem 0;
-}
-
-@media (min-width: 768px) {
-  body {
-    padding: 1.5rem;
-  }
-}
-
-.title {
-  font-size: 4rem;
-  text-align: center;
-  margin: 0 2rem 3rem;
-}
-
-.link {
-  text-decoration: underline;
 }
 
 .grid {
   display: grid;
+  padding: 0.5rem 0;
   grid-gap: 1rem;
   grid-template-columns: repeat(2, 1fr);
   place-items: start stretch;
@@ -120,6 +84,7 @@ body {
 
 @media (min-width: 760px) {
   .grid {
+    padding: 1.5rem;
     grid-gap: 3rem;
     grid-template-columns: repeat(3, 1fr);
   }

@@ -1,5 +1,6 @@
 - [ ] Unit test
 - [ ] Example for UMD build
-- [ ] Refresh on prop change
 - [ ] Refresh on css change
-- [ ] Try out StoryBook
+- [ ] Reset the item cache when the pageProvider prop changes
+- [x] Refresh on prop change
+- [x] Try out StoryBook
