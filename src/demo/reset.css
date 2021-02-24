@@ -142,6 +142,7 @@ input {
   padding: 0;
   background-color: transparent;
   font-family: inherit;
+  margin: 0;
 }
 
 input[type="submit"] {

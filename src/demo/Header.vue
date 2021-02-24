@@ -1,83 +1,85 @@
 <template>
-  <header :class="$style.header">
+  <header :class="$style.root">
     <h1 :class="$style.title">Vue Virtual Scroll Grid</h1>
 
-    <div :class="$style.controlGroup">
-      <label for="length">Number of Items: {{ length }}</label>
-      <input
-        type="range"
-        id="length"
-        min="0"
-        max="1000"
-        step="10"
-        v-model.number="length"
-      />
+    <div :class="$style.links">
+      <a
+        href="https://github.com/rocwang/vue-virtual-scroll-grid#readme"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Docs
+      </a>
+      <a
+        href="https://github.com/rocwang/vue-virtual-scroll-grid"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Github
+      </a>
+      <a
+        href="https://www.npmjs.com/package/vue-virtual-scroll-grid"
+        target="_blank"
+        rel="noreferrer"
+      >
+        NPM
+      </a>
     </div>
-
-    <div :class="$style.controlGroup">
-      <label for="pageSize">Number of Items Per Page: {{ pageSize }}</label>
-      <input
-        type="range"
-        id="pageSize"
-        min="1"
-        max="100"
-        v-model.number="pageSize"
-      />
-    </div>
-
-    <div :class="$style.controlGroup">
-      <input type="radio" id="all" value="" v-model="collection" />
-      <label for="all">All</label>
-
-      <input type="radio" id="mens" value="all-mens" v-model="collection" />
-      <label for="mens">Mens</label>
-
-      <input
-        type="radio"
-        id="womens"
-        value="womens-view-all"
-        v-model="collection"
-      />
-      <label for="womens">Womens</label>
-    </div>
-
-    <a
-      href="https://github.com/rocwang/vue-virtual-scroll-grid#readme"
-      target="_blank"
-      rel="noreferrer"
-    >
-      Docs
-    </a>
   </header>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { length, pageSize, collection } from "./store";
 
 export default defineComponent({
   name: "Header",
-  setup: () => {
-    return { length, pageSize, collection };
-  },
 });
 </script>
 
 <style module>
-.header {
-  padding: 0 2rem 3rem;
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+.root {
   background-color: var(--color-rice);
-  border-bottom: 1px solid var(--color-black);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  display: grid;
+  grid-template:
+    "title title" auto
+    "links links" auto
+    / 1fr 1fr;
+  place-items: center stretch;
+  grid-gap: 1.5rem;
+  border-bottom: 2px solid var(--color-black);
 }
 
 .title {
-  font-size: 4rem;
+  font-size: 2rem;
+  font-weight: 700;
+  grid-area: title;
+  justify-self: center;
+}
+
+.links {
+  display: flex;
+  grid-area: links;
+  flex-flow: row nowrap;
+  justify-content: space-around;
+  align-items: center;
+  text-decoration: underline;
+}
+
+@media (min-width: 760px) {
+  .root {
+    grid-template:
+      "title links" auto
+      / 1fr 200px;
+  }
+
+  .title {
+    justify-self: start;
+  }
+
+  .links {
+    justify-content: space-between;
+  }
 }
 </style>

@@ -1,5 +1,6 @@
 <template>
   <Header />
+
   <Grid
     :length="length"
     :pageSize="pageSize"
@@ -31,18 +32,21 @@
       />
     </template>
   </Grid>
+
+  <Control />
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
 import Grid from "../Grid.vue";
 import Header from "./Header.vue";
+import Control from "./Control.vue";
 import ProductItem from "./ProductItem.vue";
 import { length, pageSize, pageProvider } from "./store";
 
 export default defineComponent({
   name: "App",
-  components: { Grid, ProductItem, Header },
+  components: { Grid, ProductItem, Header, Control },
   setup: () => ({
     length,
     pageSize,
@@ -76,8 +80,8 @@ body {
 
 .grid {
   display: grid;
-  padding: 0.5rem 0;
-  grid-gap: 1rem;
+  padding: 0 1rem;
+  grid-gap: 2rem;
   grid-template-columns: repeat(2, 1fr);
   place-items: start stretch;
 }
