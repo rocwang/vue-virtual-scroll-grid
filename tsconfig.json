@@ -8,6 +8,7 @@
     "sourceMap": true,
     "lib": ["esnext", "dom"],
     "types": ["vite/client"],
+    "isolatedModules": true,
     "plugins": [{ "name": "@vuedx/typescript-plugin-vue" }]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
