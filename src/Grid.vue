@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="length > 0"
-    ref="root"
+    ref="rootRef"
     :style="{
       height: `${contentHeight}px`,
       minHeight: '100%',
@@ -18,7 +18,7 @@
         zIndex: -1,
         placeSelf: 'stretch',
       }"
-      ref="probe"
+      ref="probeRef"
     >
       <slot name="probe" />
     </div>
@@ -55,29 +55,32 @@ import {
   distinct,
   distinctUntilChanged,
   map,
+  mergeAll,
   mergeMap,
+  pluck,
   scan,
   share,
   withLatestFrom,
 } from "rxjs/operators";
-import { from, useObservable } from "@vueuse/rxjs";
+import { useObservable } from "@vueuse/rxjs";
 import {
   __,
   concat,
   difference,
+  equals,
+  gt,
   identity,
   ifElse,
+  insertAll,
   map as ramdaMap,
   min,
   pipe,
+  prop,
+  remove,
+  slice,
+  unary,
   without,
   zip,
-  remove,
-  insertAll,
-  slice,
-  equals,
-  prop,
-  gt,
 } from "ramda";
 import { concatRight, mapIndexed, sliceTo } from "ramda-adjunct";
 
@@ -126,29 +129,72 @@ export default defineComponent({
     // region: rendering trigger streams
     // todo: on css changes
 
-    // on resize
-    const resize$ = fromEvent<UIEvent>(window, "resize", { passive: true });
-
-    // on scroll
-    const scroll$ = fromEvent<UIEvent>(window, "scroll", {
-      passive: true,
-      capture: true,
-    });
-
     // on mounted
-    const mount$ = fromEventPattern<undefined>(onMounted).pipe(share());
+    const rootRef = ref<HTMLElement>(document.createElement("div"));
+    const probeRef = ref<HTMLElement>(document.createElement("div"));
+    const mounted$: Observable<{
+      root: HTMLElement;
+      probe: HTMLElement;
+    }> = fromEventPattern<undefined>(onMounted).pipe(
+      share(),
+      map(() => ({ root: rootRef.value, probe: probeRef.value }))
+    );
+
+    const scroll$: Observable<HTMLElement> = combineLatest([
+      mounted$,
+      fromEvent<UIEvent>(window, "scroll", {
+        passive: true,
+        capture: true,
+      }),
+    ]).pipe(map(([{ root }]) => root));
+
+    const rootResize$: Observable<Element> = mounted$.pipe(
+      mergeMap(({ root }) =>
+        fromEventPattern<ResizeObserverEntry[]>(
+          (handler): ResizeObserver => {
+            const observer = new ResizeObserver(unary(handler));
+            observer.observe(root);
+
+            return observer;
+          },
+          (handler, observer: ResizeObserver) =>
+            root && observer.unobserve(root)
+        )
+      ),
+      mergeAll(),
+      pluck<ResizeObserverEntry, "target">("target")
+    );
+
+    const itemResize$: Observable<{
+      itemHeight: number;
+      itemWidth: number;
+    }> = mounted$.pipe(
+      mergeMap(({ probe }) =>
+        fromEventPattern<ResizeObserverEntry[]>(
+          (handler): ResizeObserver => {
+            const observer = new ResizeObserver(unary(handler));
+            observer.observe(probe);
+
+            return observer;
+          },
+          (handler, observer: ResizeObserver) =>
+            probe && observer.unobserve(probe)
+        )
+      ),
+      mergeAll(),
+      map(({ contentRect }) => ({
+        itemHeight: contentRect.height,
+        itemWidth: contentRect.width,
+      }))
+    );
     // endregion
 
     // region: measure on the visual grid
-    const root = ref<HTMLElement>(document.createElement("div"));
-    const probe = ref<HTMLElement>(document.createElement("div"));
-
     const heightAboveWindow$: Observable<number> = merge(
-      mount$,
-      resize$,
+      rootResize$,
       scroll$
     ).pipe(
-      map(() => root.value.getBoundingClientRect().top),
+      map((rootEl) => rootEl.getBoundingClientRect().top),
       distinctUntilChanged(),
       map(pipe(min<number>(0), Math.abs))
     );
@@ -158,32 +204,29 @@ export default defineComponent({
       columns: number;
       itemHeightWithGap: number;
       itemWidthWithGap: number;
-    }> = merge(mount$, resize$).pipe(
-      map(() => {
-        const computedStyle = window.getComputedStyle(root.value);
+    }> = combineLatest([rootResize$, itemResize$]).pipe(
+      map(([rootEl, { itemHeight, itemWidth }]) => {
+        const computedStyle = window.getComputedStyle(rootEl);
+        const colGap = parseInt(
+          computedStyle.getPropertyValue("grid-column-gap")
+        );
+        const rowGap = parseInt(computedStyle.getPropertyValue("grid-row-gap"));
+
         return {
-          colGap: parseInt(computedStyle.getPropertyValue("grid-column-gap")),
-          rowGap: parseInt(computedStyle.getPropertyValue("grid-row-gap")),
+          rowGap,
           columns: computedStyle
             .getPropertyValue("grid-template-columns")
             .split(" ").length,
-          itemHeight: probe.value.offsetHeight,
-          itemWidth: probe.value.offsetWidth,
+          itemHeightWithGap: itemHeight + rowGap,
+          itemWidthWithGap: itemWidth + colGap,
         };
       }),
       distinctUntilChanged<{
-        colGap: number;
         rowGap: number;
         columns: number;
-        itemHeight: number;
-        itemWidth: number;
-      }>(equals),
-      map(({ colGap, rowGap, columns, itemHeight, itemWidth }) => ({
-        rowGap,
-        columns,
-        itemHeightWithGap: itemHeight + rowGap,
-        itemWidthWithGap: itemWidth + colGap,
-      }))
+        itemHeightWithGap: number;
+        itemWidthWithGap: number;
+      }>(equals)
     );
     // endregion
 
@@ -354,8 +397,8 @@ export default defineComponent({
 
     return {
       // refs
-      root,
-      probe,
+      rootRef,
+      probeRef,
 
       // data to render
       buffer: useObservable(buffer$),
