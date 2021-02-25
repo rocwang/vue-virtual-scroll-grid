@@ -206,10 +206,10 @@ export default defineComponent({
     }> = combineLatest([rootResize$, itemResize$]).pipe(
       map(([rootEl, { itemHeight, itemWidth }]) => {
         const computedStyle = window.getComputedStyle(rootEl);
-        const colGap = parseInt(
-          computedStyle.getPropertyValue("grid-column-gap")
-        );
-        const rowGap = parseInt(computedStyle.getPropertyValue("grid-row-gap"));
+        const colGap =
+          parseInt(computedStyle.getPropertyValue("grid-column-gap")) || 0;
+        const rowGap =
+          parseInt(computedStyle.getPropertyValue("grid-row-gap")) || 0;
 
         return {
           rowGap,
