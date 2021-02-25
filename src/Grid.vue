@@ -127,7 +127,6 @@ export default defineComponent({
     >((subscriber) => watchEffect(() => subscriber.next(props.pageProvider)));
 
     // region: rendering trigger streams
-    // todo: on css changes
 
     // on mounted
     const rootRef = ref<HTMLElement>(document.createElement("div"));
