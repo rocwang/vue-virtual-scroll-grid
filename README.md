@@ -18,17 +18,23 @@ items (e.g. 1000+ items) as a grid in a performant way.
 ## Install
 
 ```shell
-npm istall vue-virtual-scroll-grid
+npm install vue-virtual-scroll-grid
 ```
 
 ## Example
 
 ```vue
 <template>
-  <!-- length: The number of items in the list. -->
-  <!-- pageSize: The number of items in a page from the item provider (e.g. a backend API). -->
-  <!-- pageProvider: The callback that returns a page of items as a promise. -->
+  <!--
+    length: The number of items in the list.
+    pageSize: The number of items in each page returned by the page provider.
+    pageProvider: The callback that returns a page of items as a promise.
+  -->
   <Grid :length="1000" :pageSize="2" :pageProvider="pageProvider" class="grid">
+    <template v-slot:probe>
+      <div class="item">Probe</div>
+    </template>
+
     <!-- When the item is not loaded, a placeholder is rendered -->
     <template v-slot:placeholder="{ index, style }">
       <div class="item" :style="style">Placeholder {{ index }}</div>
@@ -64,59 +70,21 @@ export default {
 .grid {
   display: grid;
   grid-gap: 20px;
-  grid-template-rows: 200px;
   grid-template-columns: repeat(2, 1fr);
-  place-items: stretch;
 }
 
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 992px) {
-  .grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (min-width: 1280px) {
-  .grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (min-width: 1440px) {
-  .grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-}
-
-@media (min-width: 1650px) {
-  .grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-}
-
-@media (min-width: 1890px) {
-  .grid {
-    grid-template-columns: repeat(7, 1fr);
-  }
-}
-
-@media (min-width: 2530px) {
-  .grid {
-    grid-template-columns: repeat(8, 1fr);
-  }
-}
+@media (min-width: 768px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 992px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1280px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1440px) { .grid { grid-template-columns: repeat(5, 1fr); } }
+@media (min-width: 1650px) { .grid { grid-template-columns: repeat(6, 1fr); } }
+@media (min-width: 1890px) { .grid { grid-template-columns: repeat(7, 1fr); } }
+@media (min-width: 2530px) { .grid { grid-template-columns: repeat(8, 1fr); } }
 
 .item {
-  box-sizing: border-box;
-  border: 1px solid black;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background-color: lightgray;
+  padding: 100px 0;
+  text-align: center;
 }
 </style>
 ```
