@@ -6,39 +6,38 @@
       height: `${contentHeight}px`,
       minHeight: '100%',
       overflow: 'hidden',
+      placeContent: 'start',
     }"
   >
-    <div ref="grid" v-bind="$attrs">
-      <div
-        :style="{
-          opacity: 0,
-          visibility: 'hidden',
-          gridArea: '1/1',
-          pointerEvents: 'none',
-          zIndex: -1,
-          placeSelf: 'stretch',
-        }"
-        ref="probe"
-      >
-        <slot name="probe" />
-      </div>
-
-      <template v-for="(internalItem, index) in buffer" :key="index">
-        <slot
-          v-if="internalItem.value === undefined"
-          name="placeholder"
-          :index="internalItem.index"
-          :style="internalItem.style"
-        />
-        <slot
-          v-else
-          name="default"
-          :item="internalItem.value"
-          :index="internalItem.index"
-          :style="internalItem.style"
-        />
-      </template>
+    <div
+      :style="{
+        opacity: 0,
+        visibility: 'hidden',
+        gridArea: '1/1',
+        pointerEvents: 'none',
+        zIndex: -1,
+        placeSelf: 'stretch',
+      }"
+      ref="probe"
+    >
+      <slot name="probe" />
     </div>
+
+    <template v-for="(internalItem, index) in buffer" :key="index">
+      <slot
+        v-if="internalItem.value === undefined"
+        name="placeholder"
+        :index="internalItem.index"
+        :style="internalItem.style"
+      />
+      <slot
+        v-else
+        name="default"
+        :item="internalItem.value"
+        :index="internalItem.index"
+        :style="internalItem.style"
+      />
+    </template>
   </div>
 </template>
 
@@ -59,7 +58,6 @@ import {
   mergeMap,
   scan,
   share,
-  tap,
   withLatestFrom,
 } from "rxjs/operators";
 import { from, useObservable } from "@vueuse/rxjs";
@@ -91,7 +89,6 @@ interface InternalItem {
 
 export default defineComponent({
   name: "Grid",
-  inheritAttrs: false,
   props: {
     // The number of items in the list.
     length: {
@@ -144,7 +141,6 @@ export default defineComponent({
 
     // region: measure on the visual grid
     const root = ref<HTMLElement>(document.createElement("div"));
-    const grid = ref<HTMLElement>(document.createElement("div"));
     const probe = ref<HTMLElement>(document.createElement("div"));
 
     const heightAboveWindow$: Observable<number> = merge(
@@ -164,7 +160,7 @@ export default defineComponent({
       itemWidthWithGap: number;
     }> = merge(mount$, resize$).pipe(
       map(() => {
-        const computedStyle = window.getComputedStyle(grid.value);
+        const computedStyle = window.getComputedStyle(root.value);
         return {
           colGap: parseInt(computedStyle.getPropertyValue("grid-column-gap")),
           rowGap: parseInt(computedStyle.getPropertyValue("grid-row-gap")),
@@ -359,7 +355,6 @@ export default defineComponent({
     return {
       // refs
       root,
-      grid,
       probe,
 
       // data to render
