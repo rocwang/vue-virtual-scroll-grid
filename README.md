@@ -30,7 +30,7 @@ npm install vue-virtual-scroll-grid
     pageSize: The number of items in each page returned by the page provider.
     pageProvider: The callback that returns a page of items as a promise.
   -->
-  <Grid :length="1000" :pageSize="2" :pageProvider="pageProvider" class="grid">
+  <Grid :length="1000" :pageSize="10" :pageProvider="pageProvider" class="grid">
     <template v-slot:probe>
       <div class="item">Probe</div>
     </template>
@@ -89,33 +89,42 @@ export default {
 </style>
 ```
 
-## Caveats
-
-The library does not require items have foreknown width and height, but do
-require them to be styled with the same width and height under a view. E.g. the
-items can be 200px x 200px when the view is under 768px and 300px x 500px above
-768px.
-
 ## Available Props
 
 ```ts
 interface Props {
-  // The number of items in the list,
-  // must be an integer and greater than or equal to 0.
+  // The number of items in the list.
+  // Required and must be an integer and greater than or equal to 0.
   length: number;
+
   // The callback that returns a page of items as a promise.
+  // Required.
   pageProvider: (pageNumber: number, pageSize: number) => Promise<unknown[]>;
-  // The number of items in a page from the item provider (e.g. a backend API),
-  // must be an integer and greater than 0.
+
+  // The number of items in a page from the item provider (e.g. a backend API).
+  // Required and must be an integer and greater than 1.
   pageSize: number;
 }
+```
+
+Example:
+
+```vue
+<Grid :length="1000"
+      :pageSize="40"
+      :pageProvider="async (pageNumber, pageSize) => Array(pageSize).fill('x')"
+/>
 ```
 
 ## Available Slots
 
 There are 3 scoped slots: `default`, `placeholder` and `probe`.
 
-Props of the `default` slot:
+### The `default` slot
+
+The `default` slot is used to render a loaded item.
+
+Props:
 
 - `item`: the loaded item that is used for rendering your item
   element/component.
@@ -123,27 +132,64 @@ Props of the `default` slot:
 - `style`: the style object provided by the library that need to be set on the
   item element/component.
 
-Props of the `placeholder` slot:
+Example:
+
+```vue
+<template v-slot:default="{ item, style, index }">
+  <div :style="style">{{ item }} {{ index }}</div>
+</template>
+```
+
+### The`placeholder` slot
+
+When an item is not loaded, the component/element in the `placeholder` slot will
+be used for rendering. The `placeholder` slot is optional. If missing, the space
+of unloaded items will be blank until they are loaded.
+
+Props:
 
 - `index`: the index of current item within the list.
 - `style`: the style object provided by the library that need to be set on the
   item element/component.
 
-The `placeholder` slot is optional. If missing, the space of unloaded items will
-be blank until they are loaded.
+Example:
 
-The `probe` slot has no prop. It is used to measure the visual size of grid
-item. You can pass the same element/component for the `placeholder` slot. If
-not provided, you must set a fixed height to `grid-template-rows` on
-your CSS grid, e.g. `200px`. Otherwise, the view won't be rendered properly.
+```vue
+<template v-slot:placeholder="{ index, style }">
+  <div :style="style">Placeholder {{ index }}</div>
+</template>
+```
+
+### The `probe` slot
+
+The `probe` slot is used to measure the visual size of grid item. It has no
+prop. You can pass the same element/component for the
+`placeholder` slot. If not provided, you must set a fixed height
+to `grid-template-rows` on your CSS grid, e.g. `200px`. Otherwise, the view
+won't be rendered properly.
+
+Example:
+
+```vue
+<template v-slot:probe>
+  <div class="item">Probe</div>
+</template>
+```
+
+## Caveats
+
+The library does not require items have foreknown width and height, but do
+require them to be styled with the same width and height under a view. E.g. the
+items can be 200px x 200px when the view is under 768px and 300px x 500px above
+768px.
 
 ## Development
 
-- Setup `npm install`
-- Run dev server `shell npm run dev `
-- Lint (type check) `shell npm run lint `
-- Build the library `shell npm run build `
-- Build the demo `shell npm run build -- --mode=demo `
-- Preview the locally built demo `shell npm run serve `
+- Setup: `npm install`
+- Run dev server: `npm run dev `
+- Lint (type check): `npm run lint `
+- Build the library: `npm run build `
+- Build the demo: `npm run build -- --mode=demo `
+- Preview the locally built demo: `npm run serve `
 
 [demo]: https://vue-virtual-scroll-grid.netlify.app/
