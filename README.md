@@ -129,4 +129,4 @@ items can be 200px x 200px when the view is under 768px and 300px x 500px above
 - Preview the locally built demo: `npm run serve `
 
 [demo]: https://vue-virtual-scroll-grid.netlify.app/
-[minimal]: https://codesandbox.io/s/hungry-pond-bm1rx?file=/src/App.vue
+[minimal]: https://codesandbox.io/s/minimal-vt27c
