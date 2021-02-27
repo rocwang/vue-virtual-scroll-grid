@@ -9,21 +9,22 @@ items (e.g. 1000+ items) as a grid in a performant way.
 
 - Use virtual-scrolling / windowing to render the items, so the number of DOM
   nodes is kept low.
-- Support using a paginated API to load the items in the background.
-- Support placeholders for unloaded items and loaded items are cached for better
-  performance.
 - Just use CSS grid to style your grid. Minimum styling opinions form the
   library.
+- Support using a paginated API to load the items in the background.
+- Support rednering placeholders for unloaded items
+- Loaded items are cached for better performance.
+
+## Code Examples
+
+* [As an ES module (with a bundler)][esm]
+* [As an Universal Module Definition (no bundler)][umd]
 
 ## Install
 
 ```shell
 npm install vue-virtual-scroll-grid
 ```
-
-## Examples
-
-[Minimal Example][minimal]
 
 ## Available Props
 
@@ -129,4 +130,5 @@ items can be 200px x 200px when the view is under 768px and 300px x 500px above
 - Preview the locally built demo: `npm run serve `
 
 [demo]: https://vue-virtual-scroll-grid.netlify.app/
-[minimal]: https://codesandbox.io/s/minimal-vt27c
+[esm]: https://codesandbox.io/s/vue-virtual-scroll-grid-esm-k14w5?file=/index.html
+[umd]: https://codesandbox.io/s/vue-virtual-scroll-grid-umd-vt27c?file=/App.vue
