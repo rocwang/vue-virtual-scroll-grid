@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="length > 0"
+    v-show="length > 0"
     ref="rootRef"
     :style="{
       height: `${contentHeight}px`,
