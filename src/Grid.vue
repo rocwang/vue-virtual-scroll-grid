@@ -4,8 +4,6 @@
     ref="rootRef"
     :style="{
       height: `${contentHeight}px`,
-      minHeight: '100%',
-      overflow: 'hidden',
       placeContent: 'start',
     }"
   >
