@@ -60,6 +60,8 @@ import {
   pluck,
   scan,
   share,
+  shareReplay,
+  switchMap,
   withLatestFrom,
 } from "rxjs/operators";
 import { useObservable } from "@vueuse/rxjs";
@@ -309,27 +311,33 @@ export default defineComponent({
           pageNumber,
           items,
         }))
-      )
+      ),
+      shareReplay(1)
     );
 
-    const allItems$: Observable<unknown[]> = combineLatest([
-      itemsByPage$,
-      length$,
-    ]).pipe(
-      scan(
-        (allItems: unknown[], [{ pageNumber, items }, length]) =>
-          pipe(
-            ifElse(
-              pipe(prop("length"), gt(length)),
-              concatRight(
-                new Array(Math.max(length - allItems.length, 0)).fill(undefined)
-              ),
-              sliceTo(length)
-            ),
-            remove(pageNumber * items.length, items.length),
-            insertAll(pageNumber * items.length, items)
-          )(allItems),
-        []
+    const replayLength$ = length$.pipe(shareReplay(1));
+
+    const allItems$: Observable<unknown[]> = pageProvider$.pipe(
+      switchMap(() =>
+        combineLatest([itemsByPage$, replayLength$]).pipe(
+          scan(
+            (allItems: unknown[], [{ pageNumber, items }, length]) =>
+              pipe(
+                ifElse(
+                  pipe(prop("length"), gt(length)),
+                  concatRight(
+                    new Array(Math.max(length - allItems.length, 0)).fill(
+                      undefined
+                    )
+                  ),
+                  sliceTo(length)
+                ),
+                remove(pageNumber * items.length, items.length),
+                insertAll(pageNumber * items.length, items)
+              )(allItems),
+            []
+          )
+        )
       )
     );
 
