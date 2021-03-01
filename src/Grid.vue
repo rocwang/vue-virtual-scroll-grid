@@ -62,9 +62,8 @@ import {
   switchMap,
   withLatestFrom,
 } from "rxjs/operators";
-import { useObservable } from "@vueuse/rxjs";
 import {
-  __,
+  __ as placeholder,
   concat,
   difference,
   equals,
@@ -81,8 +80,12 @@ import {
   unary,
   without,
   zip,
+  partial,
+  invoker,
 } from "ramda";
 import { concatRight, mapIndexed, sliceTo } from "ramda-adjunct";
+import { useResizeObserver } from "@vueuse/core";
+import { useObservable } from "@vueuse/rxjs";
 
 interface InternalItem {
   index: number;
@@ -90,6 +93,7 @@ interface InternalItem {
   style?: { transform: string; gridArea: string };
 }
 
+// region: props
 const props = defineProps<{
   // The number of items in the list, integer, >= 0.
   length: number;
@@ -98,84 +102,60 @@ const props = defineProps<{
   // The number of items in a page from the item provider (e.g. a backend API), integer, >= 1
   pageProvider: (pageNumber: number, pageSize: number) => Promise<unknown[]>;
 }>();
-
 const length$ = new Observable<number>((subscriber) =>
   watchEffect(() => subscriber.next(props.length))
 );
-
 const pageSize$ = new Observable<number>((subscriber) =>
   watchEffect(() => subscriber.next(props.pageSize))
 );
-
 const pageProvider$ = new Observable<
   (pageNumber: number, pageSize: number) => Promise<unknown[]>
 >((subscriber) => watchEffect(() => subscriber.next(props.pageProvider)));
+// endregion
 
 // region: rendering trigger streams
-
-// on mounted
 const rootRef = ref<HTMLElement>(document.createElement("div"));
 const probeRef = ref<HTMLElement>(document.createElement("div"));
-const mounted$: Observable<{
-  root: HTMLElement;
-  probe: HTMLElement;
-}> = fromEventPattern<undefined>(onMounted).pipe(
-  share(),
-  map(() => ({ root: rootRef.value, probe: probeRef.value }))
+
+const mounted$: Observable<undefined> = fromEventPattern<undefined>(
+  onMounted
+).pipe(share());
+
+const scroll$: Observable<HTMLElement> = mounted$.pipe(
+  switchMap(() =>
+    fromEvent<UIEvent>(window, "scroll", {
+      passive: true,
+      capture: true,
+    })
+  ),
+  map(() => rootRef.value)
 );
 
-const scroll$: Observable<HTMLElement> = combineLatest([
-  mounted$,
-  fromEvent<UIEvent>(window, "scroll", {
-    passive: true,
-    capture: true,
-  }),
-]).pipe(map(([{ root }]) => root));
-
 const rootResize$: Observable<Element> = mounted$.pipe(
-  mergeMap(({ root }) =>
+  switchMap(() =>
     fromEventPattern<ResizeObserverEntry[]>(
-      (handler): ResizeObserver => {
-        const observer = new ResizeObserver(unary(handler));
-        observer.observe(root);
-
-        return observer;
-      },
-      (handler, observer: ResizeObserver) => root && observer.unobserve(root)
+      pipe(unary, partial(useResizeObserver, [rootRef]))
     )
   ),
   mergeAll(),
   pluck<ResizeObserverEntry, "target">("target")
 );
 
-const itemResize$: Observable<{
-  itemHeight: number;
-  itemWidth: number;
-}> = mounted$.pipe(
-  mergeMap(({ probe }) =>
+const itemRect$: Observable<DOMRectReadOnly> = mounted$.pipe(
+  switchMap(() =>
     fromEventPattern<ResizeObserverEntry[]>(
-      (handler): ResizeObserver => {
-        const observer = new ResizeObserver(unary(handler));
-        observer.observe(probe);
-
-        return observer;
-      },
-      (handler, observer: ResizeObserver) => probe && observer.unobserve(probe)
+      pipe(unary, partial(useResizeObserver, [probeRef]))
     )
   ),
   mergeAll(),
-  map(({ contentRect }) => ({
-    itemHeight: contentRect.height,
-    itemWidth: contentRect.width,
-  }))
+  pluck("contentRect")
 );
 // endregion
 
 // region: measure on the visual grid
 const heightAboveWindow$: Observable<number> = merge(rootResize$, scroll$).pipe(
-  map((rootEl) => rootEl.getBoundingClientRect().top),
-  distinctUntilChanged(),
-  map(pipe(min<number>(0), Math.abs))
+  map(pipe(invoker(0, "getBoundingClientRect"), prop("top"), min(0), Math.abs)),
+  distinctUntilChanged()
 );
 
 const resizeMeasure$: Observable<{
@@ -183,8 +163,8 @@ const resizeMeasure$: Observable<{
   columns: number;
   itemHeightWithGap: number;
   itemWidthWithGap: number;
-}> = combineLatest([rootResize$, itemResize$]).pipe(
-  map(([rootEl, { itemHeight, itemWidth }]) => {
+}> = combineLatest([rootResize$, itemRect$]).pipe(
+  map(([rootEl, { height, width }]) => {
     const computedStyle = window.getComputedStyle(rootEl);
     const colGap =
       parseInt(computedStyle.getPropertyValue("grid-column-gap")) || 0;
@@ -196,8 +176,8 @@ const resizeMeasure$: Observable<{
       columns: computedStyle
         .getPropertyValue("grid-template-columns")
         .split(" ").length,
-      itemHeightWithGap: itemHeight + rowGap,
-      itemWidthWithGap: itemWidth + colGap,
+      itemHeightWithGap: height + rowGap,
+      itemWidthWithGap: width + colGap,
     };
   }),
   distinctUntilChanged<{
@@ -209,16 +189,16 @@ const resizeMeasure$: Observable<{
 );
 // endregion
 
-const contentHeight$: Observable<number> = combineLatest([
-  resizeMeasure$,
-  length$,
-]).pipe(
-  map(
-    ([{ columns, rowGap, itemHeightWithGap }, length]) =>
-      itemHeightWithGap * Math.ceil(length / columns) - rowGap
+const contentHeight = useObservable(
+  combineLatest([resizeMeasure$, length$]).pipe(
+    map(
+      ([{ columns, rowGap, itemHeightWithGap }, length]) =>
+        itemHeightWithGap * Math.ceil(length / columns) - rowGap
+    )
   )
 );
 
+// region: rendering buffer
 const bufferMeta$: Observable<{
   columns: number;
   bufferedOffset: number;
@@ -352,33 +332,32 @@ const visibleItems$: Observable<InternalItem[]> = combineLatest([
   )
 );
 
-const buffer$: Observable<InternalItem[]> = visibleItems$.pipe(
-  scan((buffer: InternalItem[], visibleItems: InternalItem[]) => {
-    const itemsToAdd = difference(visibleItems, buffer);
-    const itemsFreeToUse = difference(buffer, visibleItems);
+const buffer = useObservable(
+  visibleItems$.pipe(
+    scan((buffer: InternalItem[], visibleItems: InternalItem[]) => {
+      const itemsToAdd = difference(visibleItems, buffer);
+      const itemsFreeToUse = difference(buffer, visibleItems);
 
-    const replaceMap = new Map(zip(itemsFreeToUse, itemsToAdd));
-    const itemsToBeReplaced = [...replaceMap.keys()];
-    const itemsToReplaceWith = [...replaceMap.values()];
+      const replaceMap = new Map(zip(itemsFreeToUse, itemsToAdd));
+      const itemsToBeReplaced = [...replaceMap.keys()];
+      const itemsToReplaceWith = [...replaceMap.values()];
 
-    const itemsToDelete = difference(itemsFreeToUse, itemsToBeReplaced);
-    const itemsToAppend = difference(itemsToAdd, itemsToReplaceWith);
+      const itemsToDelete = difference(itemsFreeToUse, itemsToBeReplaced);
+      const itemsToAppend = difference(itemsToAdd, itemsToReplaceWith);
 
-    return pipe(
-      without(itemsToDelete),
-      ramdaMap(
-        ifElse(
-          replaceMap.has.bind(replaceMap),
-          replaceMap.get.bind(replaceMap),
-          identity
-        )
-      ),
-      concat(__, itemsToAppend)
-    )(buffer);
-  }, [])
+      return pipe(
+        without(itemsToDelete),
+        ramdaMap(
+          ifElse(
+            replaceMap.has.bind(replaceMap),
+            replaceMap.get.bind(replaceMap),
+            identity
+          )
+        ),
+        concat(placeholder, itemsToAppend)
+      )(buffer);
+    }, [])
+  )
 );
-
-// data to render
-const buffer = useObservable(buffer$);
-const contentHeight = useObservable(contentHeight$);
+// endregion
 </script>
