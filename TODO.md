@@ -1,4 +1,4 @@
-- [ ] Unit test
+- [ ] Unit/E2E test
 - [x] Reset the item cache when the pageProvider prop changes
 - [x] Example for UMD build
 - [x] Refresh on css change

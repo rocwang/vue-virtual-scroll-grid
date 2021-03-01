@@ -3,7 +3,8 @@
 This is a reusable component for Vue 3 that renders a list with a huge number of
 items (e.g. 1000+ items) as a grid in a performant way.
 
-[Demo][demo]
+* [Demo][demo]
+* [NPM Package][npm]
 
 ## Features
 
@@ -12,7 +13,7 @@ items (e.g. 1000+ items) as a grid in a performant way.
 - Just use CSS grid to style your grid. Minimum styling opinions form the
   library.
 - Support using a paginated API to load the items in the background.
-- Support rednering placeholders for unloaded items
+- Support rendering placeholders for unloaded items
 - Loaded items are cached for better performance.
 
 ## Code Examples
@@ -28,29 +29,21 @@ npm install vue-virtual-scroll-grid
 
 ## Available Props
 
-```ts
-interface Props {
-  // The number of items in the list.
-  // Required and must be an integer and greater than or equal to 0.
-  length: number;
-
-  // The callback that returns a page of items as a promise.
-  // Required.
-  pageProvider: (pageNumber: number, pageSize: number) => Promise<unknown[]>;
-
-  // The number of items in a page from the item provider (e.g. a backend API).
-  // Required and must be an integer and greater than 1.
-  pageSize: number;
-}
-```
+| Name           | Description                                                               | Type                                                           | Validation                                      |
+|----------------|---------------------------------------------------------------------------|----------------------------------------------------------------|-------------------------------------------------|
+| `length`       | The number of items in the list                                           | `number`                                                       | Required, an integer greater than or equal to 0 |
+| `pageProvider` | The callback that returns a page of items as a promise                    | `(pageNumber: number, pageSize: number) => Promise<unknown[]>` | Required                                        |
+| `pageSize`     | The number of items in a page from the item provider (e.g. a backend API) | `number`                                                       | Required, an integer greater than or equal to 1 |
 
 Example:
 
 ```vue
 <Grid :length="1000"
-      :pageSize="40"
       :pageProvider="async (pageNumber, pageSize) => Array(pageSize).fill('x')"
-/>
+      :pageSize="40"
+>
+  <!-- ...slots -->
+</Grid>
 ```
 
 ## Available Slots
@@ -130,5 +123,6 @@ items can be 200px x 200px when the view is under 768px and 300px x 500px above
 - Preview the locally built demo: `npm run serve `
 
 [demo]: https://vue-virtual-scroll-grid.netlify.app/
+[npm]: https://www.npmjs.com/package/vue-virtual-scroll-grid
 [esm]: https://codesandbox.io/s/vue-virtual-scroll-grid-esm-k14w5?file=/index.html
 [umd]: https://codesandbox.io/s/vue-virtual-scroll-grid-umd-vt27c?file=/App.vue
