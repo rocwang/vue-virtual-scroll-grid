@@ -124,5 +124,5 @@ items can be 200px x 200px when the view is under 768px and 300px x 500px above
 
 [demo]: https://vue-virtual-scroll-grid.netlify.app/
 [npm]: https://www.npmjs.com/package/vue-virtual-scroll-grid
-[esm]: https://codesandbox.io/s/vue-virtual-scroll-grid-esm-k14w5?file=/index.html
-[umd]: https://codesandbox.io/s/vue-virtual-scroll-grid-umd-vt27c?file=/App.vue
+[esm]: https://codesandbox.io/s/vue-virtual-scroll-grid-esm-vt27c?file=/App.vue
+[umd]: https://codesandbox.io/s/vue-virtual-scroll-grid-umd-k14w5?file=/index.html
