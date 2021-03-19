@@ -115,6 +115,12 @@ items can be 200px x 200px when the view is under 768px and 300px x 500px above
 
 ## Development
 
+Required environment variables:
+
+* `VITE_APP_ID`: An Algolia app ID
+* `VITE_SEARCH_ONLY_API_KEY`: The search API key for the Algolia app above
+
+
 - Setup: `npm install`
 - Run dev server: `npm run dev `
 - Lint (type check): `npm run lint `

@@ -16,7 +16,7 @@ export const generalPageProvider = curry(
   ): Promise<unknown[]> =>
     algoliasearch(
       <string>import.meta.env.VITE_APP_ID,
-      <string>import.meta.env.VITE_SEARCH_ONLY_API_KEK
+      <string>import.meta.env.VITE_SEARCH_ONLY_API_KEY
     )
       .initIndex("shopify_products")
       .search("", {
