@@ -54,7 +54,6 @@ import {
   distinctUntilChanged,
   map,
   mapTo,
-  mergeAll,
   mergeMap,
   pluck,
   scan,
@@ -73,21 +72,20 @@ import {
   ifElse,
   insertAll,
   map as ramdaMap,
-  min,
   pipe,
   prop,
   remove,
   slice,
-  unary,
   without,
   zip,
-  partial,
-  invoker,
 } from "ramda";
 import { concatRight, mapIndexed, sliceTo } from "ramda-adjunct";
-import { useResizeObserver } from "@vueuse/core";
 import { useObservable } from "@vueuse/rxjs";
-import {computeHeightAboveWindowOf, fromProp, fromResizeObserver} from "./utilites";
+import {
+  computeHeightAboveWindowOf,
+  fromProp,
+  fromResizeObserver,
+} from "./utilites";
 
 interface InternalItem {
   index: number;
