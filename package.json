@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@types/node": "^14.14.20",
-    "@types/ramda": "^0.27.38",
+    "@types/ramda": "^0.27.40",
     "@vitejs/plugin-vue": "^1.0.4",
     "@vue/compiler-sfc": "^3.0.5",
     "@vuedx/typecheck": ">=0.6.0",
