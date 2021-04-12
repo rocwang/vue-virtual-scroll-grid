@@ -40,7 +40,7 @@
     "@vueuse/core": "^4.8.1",
     "@vueuse/rxjs": "^4.8.1",
     "ramda": "^0.27.1",
-    "ramda-adjunct": "^2.30.0",
+    "ramda-adjunct": "^2.32.0",
     "rxjs": "^6.6.3",
     "vue": "^3.0.5"
   },
