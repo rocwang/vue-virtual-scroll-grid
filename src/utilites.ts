@@ -1,6 +1,6 @@
 import { fromEventPattern, Observable } from "rxjs";
 import { Ref, watchEffect } from "vue";
-import { invoker, min, partial, pipe, prop, unary } from "ramda";
+import { partial, pipe, unary } from "ramda";
 import { useResizeObserver } from "@vueuse/core";
 import { mergeAll } from "rxjs/operators";
 
@@ -21,9 +21,4 @@ export function fromResizeObserver(
   ).pipe(mergeAll());
 }
 
-export const computeHeightAboveWindowOf: (el: Element) => number = pipe(
-  invoker(0, "getBoundingClientRect"),
-  prop("top"),
-  min(0),
-  Math.abs
-);
+export type PageProvider = (pageNumber: number, pageSize: number) => Promise<unknown[]>
