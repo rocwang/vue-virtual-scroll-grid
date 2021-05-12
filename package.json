@@ -37,7 +37,7 @@
     "version": "npm run build"
   },
   "dependencies": {
-    "@vueuse/core": "^4.9.2",
+    "@vueuse/core": "^4.9.3",
     "@vueuse/rxjs": "^4.9.2",
     "ramda": "^0.27.1",
     "ramda-adjunct": "^2.32.0",
