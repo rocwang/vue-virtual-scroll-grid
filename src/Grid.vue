@@ -40,9 +40,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, PropType, ref, Ref } from "vue";
+import { defineComponent, onMounted, PropType, ref } from "vue";
 import { fromEvent, fromEventPattern, Observable } from "rxjs";
-import { mapTo, pluck, share, switchMap } from "rxjs/operators";
+import { pluck, share, switchMapTo } from "rxjs/operators";
 import { useObservable } from "@vueuse/rxjs";
 import { fromProp, fromResizeObserver, PageProvider } from "./utilites";
 import { pipeline } from "./pipeline";
@@ -75,37 +75,45 @@ export default defineComponent({
     const pageProvider$ = fromProp<PageProvider>("pageProvider", props);
     // endregion
 
-    // region: rendering trigger streams
+    // region: refs
     const rootRef = ref<HTMLElement>(document.createElement("div"));
     const probeRef = ref<HTMLElement>(document.createElement("div"));
+    // endregion
 
-    const mounted$: Observable<{
-      rootRef: Ref<HTMLElement>;
-      probeRef: Ref<HTMLElement>;
-    }> = fromEventPattern(onMounted).pipe(
-      mapTo({ rootRef, probeRef }),
-      share()
-    );
-
-    const scroll$: Observable<HTMLElement> = mounted$.pipe(
-      switchMap(({ rootRef }) =>
-        fromEvent<UIEvent>(window, "scroll", {
-          passive: true,
-          capture: true,
-        }).pipe(mapTo(rootRef.value))
+    // region: rendering triggers
+    // a stream of root elements when scrolling
+    const scroll$: Observable<HTMLElement> = fromEventPattern(onMounted).pipe(
+      // use share() to push the "mounted" event from vue, instead of pulling:
+      share(),
+      switchMapTo(
+        fromEvent<UIEvent>(
+          window,
+          "scroll",
+          {
+            passive: true,
+            capture: true,
+          },
+          () => rootRef.value
+        )
       )
     );
 
+    // a stream of root elements when it is resized
     const rootResize$: Observable<Element> = fromResizeObserver(rootRef).pipe(
       pluck("target")
     );
 
+    // a stream of item size measurements when it is changed
     const itemRect$: Observable<DOMRectReadOnly> = fromResizeObserver(
       probeRef
     ).pipe(pluck("contentRect"));
     // endregion
 
-    const [buffer, contentHeight] = pipeline(
+    // region: data to render
+    const [
+      buffer, // the items in the current scanning window
+      contentHeight, // the height of the whole list
+    ] = pipeline(
       itemRect$,
       length$,
       pageProvider$,
@@ -113,17 +121,9 @@ export default defineComponent({
       rootResize$,
       scroll$
     ).map(useObservable);
+    // endregion
 
-    return {
-      // refs
-      rootRef,
-      probeRef,
-
-      // data to render
-      buffer,
-      contentHeight,
-    };
+    return { rootRef, probeRef, buffer, contentHeight };
   },
 });
-// endregion
 </script>

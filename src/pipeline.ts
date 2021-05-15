@@ -37,7 +37,7 @@ interface InternalItem {
   style?: { transform: string; gridArea: string };
 }
 
-type output = [buffer$: Observable<any>, contentHeight$: Observable<any>];
+type Output = [buffer$: Observable<any>, contentHeight$: Observable<any>];
 
 const computeHeightAboveWindowOf: (el: Element) => number = pipe(
   invoker(0, "getBoundingClientRect"),
@@ -53,7 +53,7 @@ export function pipeline(
   pageSize$: Observable<number>,
   rootResize$: Observable<Element>,
   scroll$: Observable<HTMLElement>
-): output {
+): Output {
   // region: measure on the visual grid
   const heightAboveWindow$: Observable<number> = merge(
     rootResize$,
