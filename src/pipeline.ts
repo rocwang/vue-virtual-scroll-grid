@@ -18,9 +18,7 @@ import {
   identity,
   ifElse,
   insertAll,
-  invoker,
   map as ramdaMap,
-  min,
   pipe,
   prop,
   remove,
@@ -39,12 +37,26 @@ interface InternalItem {
 
 type Output = [buffer$: Observable<any>, contentHeight$: Observable<any>];
 
-const computeHeightAboveWindowOf: (el: Element) => number = pipe(
-  invoker(0, "getBoundingClientRect"),
-  prop("top"),
-  min(0),
-  Math.abs
-);
+function computeHeightAboveWindowOf(el: Element): number {
+  const top = el.getBoundingClientRect().top;
+
+  return Math.abs(Math.min(top, 0));
+}
+
+function getGridProperties(rootEl: Element): {
+  colGap: number;
+  rowGap: number;
+  columns: number;
+} {
+  const computedStyle = window.getComputedStyle(rootEl);
+
+  return {
+    rowGap: parseInt(computedStyle.getPropertyValue("grid-row-gap")) || 0,
+    colGap: parseInt(computedStyle.getPropertyValue("grid-column-gap")) || 0,
+    columns: computedStyle.getPropertyValue("grid-template-columns").split(" ")
+      .length,
+  };
+}
 
 export function pipeline(
   itemRect$: Observable<DOMRectReadOnly>,
@@ -67,17 +79,11 @@ export function pipeline(
     itemWidthWithGap: number;
   }> = combineLatest([rootResize$, itemRect$]).pipe(
     map(([rootEl, { height, width }]) => {
-      const computedStyle = window.getComputedStyle(rootEl);
-      const colGap =
-        parseInt(computedStyle.getPropertyValue("grid-column-gap")) || 0;
-      const rowGap =
-        parseInt(computedStyle.getPropertyValue("grid-row-gap")) || 0;
+      const { rowGap, colGap, columns } = getGridProperties(rootEl);
 
       return {
         rowGap,
-        columns: computedStyle
-          .getPropertyValue("grid-template-columns")
-          .split(" ").length,
+        columns,
         itemHeightWithGap: height + rowGap,
         itemWidthWithGap: width + colGap,
       };
