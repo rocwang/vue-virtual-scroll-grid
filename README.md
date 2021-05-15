@@ -128,6 +128,10 @@ Required environment variables:
 - Build the demo: `npm run build -- --mode=demo `
 - Preview the locally built demo: `npm run serve `
 
+### How to Release a New Version
+
+`npm version minor -m [major | minor | patch] 'build: tag <version-number>'`
+
 [demo]: https://vue-virtual-scroll-grid.netlify.app/
 [npm]: https://www.npmjs.com/package/vue-virtual-scroll-grid
 [esm]: https://codesandbox.io/s/vue-virtual-scroll-grid-esm-vt27c?file=/App.vue
