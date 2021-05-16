@@ -24,8 +24,7 @@
     ".": {
       "import": "./dist/vue-virtual-scroll-grid.es.js",
       "require": "./dist/vue-virtual-scroll-grid.umd.js"
-    },
-    "./dist/style.css": "./dist/style.css"
+    }
   },
   "version": "0.9.0",
   "license": "MIT",
