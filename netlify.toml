@@ -30,10 +30,10 @@
 
 # Redirect default Netlify subdomain to primary domain
 #[[redirects]]
-#  from = "https://vue-virtual-scroll-grid.netlify.com/*"
-#  to = "https://virtual-scroll-grid.kiwiberry.nz/:splat"
-#  status = 301
-#  force = true
+  from = "https://vue-virtual-scroll-grid.netlify.app/*"
+  to = "https://grid.kiwiberry.nz/:splat"
+  status = 301
+  force = true
 
 # Long-term cache by default.
 [[headers]]

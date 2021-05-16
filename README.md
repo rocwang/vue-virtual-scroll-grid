@@ -132,7 +132,7 @@ Required environment variables:
 
 `npm version minor -m [major | minor | patch] 'build: tag <version-number>'`
 
-[demo]: https://vue-virtual-scroll-grid.netlify.app/
+[demo]: https://grid.kiwiberry.nz/
 [npm]: https://www.npmjs.com/package/vue-virtual-scroll-grid
 [esm]: https://codesandbox.io/s/vue-virtual-scroll-grid-esm-vt27c?file=/App.vue
 [umd]: https://codesandbox.io/s/vue-virtual-scroll-grid-umd-k14w5?file=/index.html
