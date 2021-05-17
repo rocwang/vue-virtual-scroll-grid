@@ -130,7 +130,10 @@ Required environment variables:
 
 ### How to Release a New Version
 
-`npm version minor -m [major | minor | patch] 'build: tag <version-number>'`
+```shell
+npm version [major | minor | patch] -m 'build: bump version number'
+npm publish
+```
 
 [demo]: https://grid.kiwiberry.nz/
 [npm]: https://www.npmjs.com/package/vue-virtual-scroll-grid
