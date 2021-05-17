@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JsonSchemaMappingsProjectConfiguration">
+    <state>
+      <map>
+        <entry key="dependabot-v2.json">
+          <value>
+            <SchemaInfo>
+              <option name="name" value="dependabot-v2.json" />
+              <option name="relativePathToSchema" value="https://json.schemastore.org/dependabot-2.0.json" />
+            </SchemaInfo>
+          </value>
+        </entry>
+      </map>
+    </state>
+  </component>
+</project>
