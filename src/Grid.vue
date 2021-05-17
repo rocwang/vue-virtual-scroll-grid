@@ -44,8 +44,8 @@ import { defineComponent, onMounted, PropType, ref } from "vue";
 import { fromEvent, fromEventPattern, Observable } from "rxjs";
 import { pluck, share, switchMapTo } from "rxjs/operators";
 import { useObservable } from "@vueuse/rxjs";
-import { fromProp, fromResizeObserver, PageProvider } from "./utilites";
-import { pipeline } from "./pipeline";
+import { fromProp, fromResizeObserver} from "./utilites";
+import {InternalItem, PageProvider, pipeline} from "./pipeline";
 
 export default defineComponent({
   name: "Grid",
@@ -86,7 +86,7 @@ export default defineComponent({
       // use share() to push the "mounted" event from vue, instead of pulling:
       share(),
       switchMapTo(
-        fromEvent<UIEvent>(
+        fromEvent<UIEvent, HTMLElement>(
           window,
           "scroll",
           {
@@ -120,7 +120,7 @@ export default defineComponent({
       pageSize$,
       rootResize$,
       scroll$
-    ).map(useObservable);
+    ).map(o => useObservable<number| InternalItem[]>(o));
     // endregion
 
     return { rootRef, probeRef, buffer, contentHeight };

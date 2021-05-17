@@ -20,5 +20,3 @@ export function fromResizeObserver(
     pipe(unary, partial(useResizeObserver, [elRef]))
   ).pipe(mergeAll());
 }
-
-export type PageProvider = (pageNumber: number, pageSize: number) => Promise<unknown[]>
