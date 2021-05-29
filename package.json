@@ -52,7 +52,7 @@
     "algoliasearch": "^4.9.1",
     "prettier": "^2.3.0",
     "typescript": "^4.2.4",
-    "vite": "^2.3.2",
+    "vite": "^2.3.4",
     "vue-tsc": ">=0.1.4"
   },
   "engines": {
