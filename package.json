@@ -36,7 +36,7 @@
     "version": "npm run build"
   },
   "dependencies": {
-    "@vueuse/core": "^4.10.0",
+    "@vueuse/core": "^4.11.1",
     "@vueuse/rxjs": "^4.11.1",
     "lodash-es": "^4.17.21",
     "ramda": "^0.27.1",
