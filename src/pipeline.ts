@@ -29,7 +29,7 @@ import {
 } from "ramda";
 import { concatRight, mapIndexed, sliceTo } from "ramda-adjunct";
 
-function computeHeightAboveWindowOf(el: Element): number {
+export function computeHeightAboveWindowOf(el: Element): number {
   const top = el.getBoundingClientRect().top;
 
   return Math.abs(Math.min(top, 0));
@@ -41,12 +41,12 @@ interface GridMeasurement {
   columns: number;
 }
 
-function getGridMeasurement(rootEl: Element): GridMeasurement {
+export function getGridMeasurement(rootEl: Element): GridMeasurement {
   const computedStyle = window.getComputedStyle(rootEl);
 
   return {
-    rowGap: parseInt(computedStyle.getPropertyValue("grid-row-gap")) || 0,
-    colGap: parseInt(computedStyle.getPropertyValue("grid-column-gap")) || 0,
+    rowGap: parseInt(computedStyle.getPropertyValue("row-gap")) || 0,
+    colGap: parseInt(computedStyle.getPropertyValue("column-gap")) || 0,
     columns: computedStyle.getPropertyValue("grid-template-columns").split(" ")
       .length,
   };
@@ -59,7 +59,7 @@ interface ResizeMeasurement {
   itemWidthWithGap: number;
 }
 
-function getResizeMeasurement(
+export function getResizeMeasurement(
   rootEl: Element,
   { height, width }: DOMRectReadOnly
 ): ResizeMeasurement {
@@ -78,7 +78,7 @@ interface BufferMeta {
   bufferedLength: number;
 }
 
-function getBufferMeta(
+export function getBufferMeta(
   heightAboveWindow: number,
   { columns, rowGap, itemHeightWithGap }: ResizeMeasurement
 ): BufferMeta {
@@ -100,7 +100,7 @@ function getBufferMeta(
   };
 }
 
-function getObservableOfVisiblePageNumbers(
+export function getObservableOfVisiblePageNumbers(
   { bufferedOffset, bufferedLength }: BufferMeta,
   length: number,
   pageSize: number
@@ -124,7 +124,7 @@ export type PageProvider = (
   pageSize: number
 ) => Promise<unknown[]>;
 
-function callPageProvider(
+export function callPageProvider(
   pageNumber: number,
   pageSize: number,
   pageProvider: PageProvider
@@ -135,7 +135,7 @@ function callPageProvider(
   }));
 }
 
-function accumulateAllItems(
+export function accumulateAllItems(
   allItems: unknown[],
   [{ pageNumber, items }, length]: [ItemsByPage, number]
 ): unknown[] {
@@ -158,7 +158,7 @@ export interface InternalItem {
   style?: { transform: string; gridArea: string };
 }
 
-function getVisibleItems(
+export function getVisibleItems(
   { bufferedOffset, bufferedLength }: BufferMeta,
   { columns, itemWidthWithGap, itemHeightWithGap }: ResizeMeasurement,
   allItems: unknown[]
@@ -182,7 +182,7 @@ function getVisibleItems(
   )(allItems);
 }
 
-function accumulateBuffer(
+export function accumulateBuffer(
   buffer: InternalItem[],
   visibleItems: InternalItem[]
 ): InternalItem[] {
@@ -209,7 +209,7 @@ function accumulateBuffer(
   )(buffer);
 }
 
-function getContentHeight(
+export function getContentHeight(
   { columns, rowGap, itemHeightWithGap }: ResizeMeasurement,
   length: number
 ): number {

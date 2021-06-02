@@ -33,7 +33,10 @@
     "build": "vite build",
     "dev": "vite",
     "lint": "vue-tsc --noEmit src/*.ts src/*.vue",
-    "version": "npm run build"
+    "test": "jest",
+    "preversion": "npm test",
+    "version": "npm run build",
+    "postversion": "npm publish --dry-run"
   },
   "dependencies": {
     "@vueuse/core": "^4.11.1",
@@ -45,12 +48,15 @@
     "vue": "^3.0.5"
   },
   "devDependencies": {
+    "@types/jest": "^26.0.23",
     "@types/node": "^15.6.1",
     "@types/ramda": "^0.27.40",
     "@vitejs/plugin-vue": "^1.2.2",
     "@vue/compiler-sfc": "^3.0.5",
     "algoliasearch": "^4.9.1",
+    "jest": "^27.0.3",
     "prettier": "^2.3.0",
+    "ts-jest": "^27.0.2",
     "typescript": "^4.3.2",
     "vite": "^2.3.4",
     "vue-tsc": ">=0.1.6"
