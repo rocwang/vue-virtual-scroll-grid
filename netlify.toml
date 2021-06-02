@@ -30,8 +30,8 @@
 
 # Redirect default Netlify subdomain to primary domain
 [[redirects]]
-  from = "https://vue-virtual-scroll-grid.netlify.app/*"
-  to = "https://grid.kiwiberry.nz/:splat"
+  from = "https://vue-virtual-scroll-grid.netlify.app"
+  to = "https://grid.kiwiberry.nz"
   status = 301
   force = true
 
