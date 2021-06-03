@@ -111,8 +111,8 @@ export default defineComponent({
 
     // region: data to render
     const [
-      buffer, // the items in the current scanning window
-      contentHeight, // the height of the whole list
+      buffer$, // the items in the current scanning window
+      contentHeight$, // the height of the whole list
     ] = pipeline(
       itemRect$,
       length$,
@@ -120,7 +120,9 @@ export default defineComponent({
       pageSize$,
       rootResize$,
       scroll$
-    ).map(o => useObservable<number| InternalItem[]>(o));
+    )
+    const buffer = useObservable<InternalItem[]>(buffer$)
+    const contentHeight = useObservable<number>(contentHeight$)
     // endregion
 
     return { rootRef, probeRef, buffer, contentHeight };
