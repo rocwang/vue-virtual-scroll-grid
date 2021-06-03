@@ -82,6 +82,8 @@ export default defineComponent({
 
     // region: rendering triggers
     // a stream of root elements when scrolling
+    // @ts-expect-error Rxjs has a typing bug on fromEvent() with resultSelector
+    // which is fixed in https://github.com/ReactiveX/rxjs/pull/6447
     const scroll$: Observable<HTMLElement> = fromEventPattern(onMounted).pipe(
       // use share() to push the "mounted" event from vue, instead of pulling:
       share(),
