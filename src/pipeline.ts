@@ -78,27 +78,29 @@ interface BufferMeta {
   bufferedLength: number;
 }
 
-export function getBufferMeta(
-  heightAboveWindow: number,
-  { columns, rowGap, itemHeightWithGap }: ResizeMeasurement
-): BufferMeta {
-  const rowsInView =
-    itemHeightWithGap &&
-    Math.ceil((window.innerHeight + rowGap) / itemHeightWithGap) + 1;
-  const length = rowsInView * columns;
+export const getBufferMeta =
+  (windowInnerHeight: number = window.innerHeight) =>
+  (
+    heightAboveWindow: number,
+    { columns, rowGap, itemHeightWithGap }: ResizeMeasurement
+  ): BufferMeta => {
+    const rowsInView =
+      itemHeightWithGap &&
+      Math.ceil((windowInnerHeight + rowGap) / itemHeightWithGap) + 1;
+    const length = rowsInView * columns;
 
-  const rowsBeforeView =
-    itemHeightWithGap &&
-    Math.floor((heightAboveWindow + rowGap) / itemHeightWithGap);
-  const offset = rowsBeforeView * columns;
-  const bufferedOffset = Math.max(offset - Math.floor(length / 2), 0);
-  const bufferedLength = Math.min(length * 2);
+    const rowsBeforeView =
+      itemHeightWithGap &&
+      Math.floor((heightAboveWindow + rowGap) / itemHeightWithGap);
+    const offset = rowsBeforeView * columns;
+    const bufferedOffset = Math.max(offset - Math.floor(length / 2), 0);
+    const bufferedLength = length * 2;
 
-  return {
-    bufferedOffset,
-    bufferedLength,
+    return {
+      bufferedOffset,
+      bufferedLength,
+    };
   };
-}
 
 export function getObservableOfVisiblePageNumbers(
   { bufferedOffset, bufferedLength }: BufferMeta,
@@ -249,7 +251,7 @@ export function pipeline(
   // region: rendering buffer
   const bufferMeta$: Observable<BufferMeta> = combineLatest(
     [heightAboveWindow$, resizeMeasurement$],
-    getBufferMeta
+    getBufferMeta()
   ).pipe(distinctUntilChanged<BufferMeta>(equals));
 
   const itemsByPage$: Observable<ItemsByPage> = combineLatest([

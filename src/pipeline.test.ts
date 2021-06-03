@@ -1,8 +1,13 @@
 import {
+  callPageProvider,
   computeHeightAboveWindowOf,
+  getBufferMeta,
+  getContentHeight,
   getGridMeasurement,
+  getObservableOfVisiblePageNumbers,
   getResizeMeasurement,
 } from "./pipeline";
+import { TestScheduler } from "rxjs/testing";
 
 describe("computeHeightAboveWindowOf", () => {
   // Mock getBoundingClientRect() for jsdom as it always returns:
@@ -54,6 +59,7 @@ describe("getGridMeasurement", () => {
   it("returns correct grid measurement in numbers", () => {
     const el = createGridRoot("10px", "20px", "30px 30px 30px");
     const measurement = getGridMeasurement(el);
+
     expect(measurement).toEqual({
       rowGap: 10,
       colGap: 20,
@@ -77,6 +83,7 @@ describe("getResizeMeasurement", () => {
       y: 0,
       toJSON: jest.fn(),
     });
+
     expect(measurement).toEqual({
       rowGap: 10,
       columns: 3,
@@ -85,3 +92,103 @@ describe("getResizeMeasurement", () => {
     });
   });
 });
+
+describe("getBufferMeta", () => {
+  it("returns correct buffer meta data when heightAboveWindow is 0", () => {
+    const meta = getBufferMeta(1000)(0, {
+      columns: 3,
+      rowGap: 10,
+      itemHeightWithGap: 50,
+      itemWidthWithGap: 50,
+    });
+
+    expect(meta).toEqual({ bufferedOffset: 0, bufferedLength: 132 });
+  });
+
+  it("returns correct buffer meta data when heightAboveWindow is greater than 0", () => {
+    const meta = getBufferMeta(1000)(5000, {
+      columns: 3,
+      rowGap: 10,
+      itemHeightWithGap: 50,
+      itemWidthWithGap: 50,
+    });
+
+    expect(meta).toEqual({ bufferedOffset: 267, bufferedLength: 132 });
+  });
+});
+
+describe("getObservableOfVisiblePageNumbers", () => {
+  const scheduler = new TestScheduler((actual, expected) => {
+    expect(actual).toEqual(expected);
+  });
+
+  it("returns 1 page when the buffer length is smaller than the page size", () => {
+    scheduler.run(({ expectObservable }) => {
+      const expectedMarble = "(a|)";
+      const expectedPageNumbers = { a: 0 };
+      const pageNumber$ = getObservableOfVisiblePageNumbers(
+        { bufferedOffset: 0, bufferedLength: 10 },
+        100,
+        20
+      );
+      expectObservable(pageNumber$).toBe(expectedMarble, expectedPageNumbers);
+    });
+  });
+
+  it("returns multiple pages when the buffer length is greater than the page size", () => {
+    scheduler.run(({ expectObservable }) => {
+      const expectedMarble = "(abcde|)";
+      const expectedPageNumbers = { a: 2, b: 3, c: 4, d: 5, e: 6 };
+      const pageNumber$ = getObservableOfVisiblePageNumbers(
+        { bufferedOffset: 50, bufferedLength: 80 },
+        200,
+        20
+      );
+      expectObservable(pageNumber$).toBe(expectedMarble, expectedPageNumbers);
+    });
+  });
+
+  it("returns multiple pages up to the list length", () => {
+    scheduler.run(({ expectObservable }) => {
+      const expectedMarble = "(abc|)";
+      const expectedPageNumbers = { a: 2, b: 3, c: 4 };
+      const pageNumber$ = getObservableOfVisiblePageNumbers(
+        { bufferedOffset: 50, bufferedLength: 80 },
+        100,
+        20
+      );
+      expectObservable(pageNumber$).toBe(expectedMarble, expectedPageNumbers);
+    });
+  });
+});
+
+describe("callPageProvider", () => {
+  it("calls pageProvider and returns pageNumber and items", async () => {
+    const pageProvider = jest.fn(async () => Array(10).fill("item"));
+    const { pageNumber, items } = await callPageProvider(0, 10, pageProvider);
+
+    expect(pageNumber).toBe(0);
+    expect(items).toEqual(Array(10).fill("item"));
+  });
+});
+
+describe("getContentHeight", () => {
+  it("returns correct content height", () => {
+    const contentHeight = getContentHeight(
+      {
+        columns: 5,
+        rowGap: 10,
+        itemHeightWithGap: 100,
+        itemWidthWithGap: 100,
+      },
+      1000
+    );
+
+    expect(contentHeight).toBe(19_990);
+  });
+});
+
+// TODO: test accumulateAllItems()
+// TODO: test getVisibleItems()
+// TODO: test accumulateBuffer()
+// TODO: test pipeline()
