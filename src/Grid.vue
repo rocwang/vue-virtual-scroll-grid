@@ -112,10 +112,10 @@ export default defineComponent({
     // endregion
 
     // region: data to render
-    const [
+    const {
       buffer$, // the items in the current scanning window
       contentHeight$, // the height of the whole list
-    ] = pipeline(
+    } = pipeline(
       itemRect$,
       length$,
       pageProvider$,

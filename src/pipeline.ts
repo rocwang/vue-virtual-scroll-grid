@@ -11,23 +11,21 @@ import {
 } from "rxjs/operators";
 import {
   __,
+  addIndex,
   apply,
   concat,
   difference,
   equals,
-  gt,
   identity,
   ifElse,
   insertAll,
   map as ramdaMap,
   pipe,
-  prop,
   remove,
   slice,
   without,
   zip,
 } from "ramda";
-import { concatRight, mapIndexed, sliceTo } from "ramda-adjunct";
 
 export function computeHeightAboveWindowOf(el: Element): number {
   const top = el.getBoundingClientRect().top;
@@ -142,13 +140,11 @@ export function accumulateAllItems(
   [{ pageNumber, items }, length]: [ItemsByPage, number]
 ): unknown[] {
   return pipe(
-    ifElse(
-      pipe(prop("length"), gt(length)),
-      concatRight(
-        new Array(Math.max(length - allItems.length, 0)).fill(undefined)
-      ),
-      sliceTo(length)
-    ),
+    concat(
+      __,
+      new Array(Math.max(length - allItems.length, 0)).fill(undefined)
+    ) as (a: unknown[]) => unknown[],
+    slice(0, length),
     remove(pageNumber * items.length, items.length),
     insertAll(pageNumber * items.length, items)
   )(allItems);
@@ -167,7 +163,7 @@ export function getVisibleItems(
 ): InternalItem[] {
   return pipe(
     slice(bufferedOffset, bufferedOffset + bufferedLength),
-    mapIndexed((value, localIndex) => {
+    addIndex(ramdaMap)((value, localIndex) => {
       const index = bufferedOffset + localIndex;
       const x = (index % columns) * itemWidthWithGap;
       const y = Math.floor(index / columns) * itemHeightWithGap;
@@ -180,7 +176,7 @@ export function getVisibleItems(
           transform: `translate(${x}px, ${y}px)`,
         },
       };
-    })
+    }) as (a: unknown[]) => InternalItem[]
   )(allItems);
 }
 
@@ -218,10 +214,10 @@ export function getContentHeight(
   return itemHeightWithGap * Math.ceil(length / columns) - rowGap;
 }
 
-type PipelineOutput = [
-  buffer$: Observable<InternalItem[]>,
-  contentHeight$: Observable<number>
-];
+interface PipelineOutput {
+  buffer$: Observable<InternalItem[]>;
+  contentHeight$: Observable<number>;
+}
 
 export function pipeline(
   itemRect$: Observable<DOMRectReadOnly>,
@@ -280,5 +276,5 @@ export function pipeline(
   ).pipe(scan(accumulateBuffer, []));
   // endregion
 
-  return [buffer$, contentHeight$];
+  return { buffer$, contentHeight$ };
 }

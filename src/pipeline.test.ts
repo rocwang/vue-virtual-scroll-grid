@@ -1,4 +1,6 @@
 import {
+  accumulateAllItems,
+  accumulateBuffer,
   callPageProvider,
   computeHeightAboveWindowOf,
   getBufferMeta,
@@ -6,6 +8,7 @@ import {
   getGridMeasurement,
   getObservableOfVisiblePageNumbers,
   getResizeMeasurement,
+  getVisibleItems,
 } from "./pipeline";
 import { TestScheduler } from "rxjs/testing";
 
@@ -169,6 +172,148 @@ describe("callPageProvider", () => {
 
     expect(pageNumber).toBe(0);
     expect(items).toEqual(Array(10).fill("item"));
+  });
+});
+
+describe("accumulateAllItems", () => {
+  it("can extend allItems", () => {
+    const allItems = accumulateAllItems(
+      [0, 1, 2, 3, 4, 5],
+      [{ pageNumber: 1, items: ["a", "b", "c"] }, 10]
+    );
+
+    expect(allItems).toEqual([
+      0,
+      1,
+      2,
+      "a",
+      "b",
+      "c",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+  });
+
+  it("can shrink allItems", () => {
+    const allItems = accumulateAllItems(
+      [0, 1, 2, 3, 4, 5, 6],
+      [{ pageNumber: 0, items: ["a", "b", "c"] }, 5]
+    );
+
+    expect(allItems).toEqual(["a", "b", "c", 3, 4]);
+  });
+});
+
+describe("getVisibleItems", () => {
+  it("returns correct visible items", () => {
+    const visibleItems = getVisibleItems(
+      { bufferedOffset: 2, bufferedLength: 2 },
+      {
+        columns: 2,
+        rowGap: 10,
+        itemHeightWithGap: 50,
+        itemWidthWithGap: 60,
+      },
+      ["a", "b", "c", "d", "e", "f", "g"]
+    );
+
+    expect(visibleItems).toEqual([
+      {
+        index: 2,
+        value: "c",
+        style: {
+          gridArea: "1/1",
+          transform: `translate(0px, 50px)`,
+        },
+      },
+      {
+        index: 3,
+        value: "d",
+        style: {
+          gridArea: "1/1",
+          transform: `translate(60px, 50px)`,
+        },
+      },
+    ]);
+  });
+});
+
+describe("accumulateBuffer", () => {
+  it("merge visible items into buffer in a stable way", () => {
+    const buffer = [
+      {
+        index: 0,
+        value: "a",
+        style: {
+          gridArea: "1/1",
+          transform: `translate(0px, 50px)`,
+        },
+      },
+      {
+        index: 1,
+        value: "b",
+        style: {
+          gridArea: "1/1",
+          transform: `translate(0px, 100px)`,
+        },
+      },
+    ];
+    const visibleItems = [
+      {
+        index: 1,
+        value: "b",
+        style: {
+          gridArea: "1/1",
+          transform: `translate(0px, 100px)`,
+        },
+      },
+      {
+        index: 2,
+        value: "c",
+        style: {
+          gridArea: "1/1",
+          transform: `translate(0px, 150px)`,
+        },
+      },
+      {
+        index: 3,
+        value: "d",
+        style: {
+          gridArea: "1/1",
+          transform: `translate(0px, 200px)`,
+        },
+      },
+    ];
+    const newBuffer = [
+      {
+        index: 2,
+        value: "c",
+        style: {
+          gridArea: "1/1",
+          transform: `translate(0px, 150px)`,
+        },
+      },
+      {
+        index: 1,
+        value: "b",
+        style: {
+          gridArea: "1/1",
+          transform: `translate(0px, 100px)`,
+        },
+      },
+      {
+        index: 3,
+        value: "d",
+        style: {
+          gridArea: "1/1",
+          transform: `translate(0px, 200px)`,
+        },
+      },
+    ];
+
+    expect(accumulateBuffer(buffer, visibleItems)).toEqual(newBuffer);
   });
 });
 
