@@ -34,7 +34,7 @@
     "dev": "vite",
     "lint": "vue-tsc --noEmit",
     "test": "jest",
-    "preversion": "npm test",
+    "preversion": "npm run lint && npm test",
     "version": "npm run build",
     "postversion": "npm publish --dry-run"
   },
