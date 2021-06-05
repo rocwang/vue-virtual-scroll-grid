@@ -55,7 +55,7 @@
     "algoliasearch": "^4.9.1",
     "jest": "^27.0.3",
     "lodash-es": "^4.17.21",
-    "prettier": "^2.3.0",
+    "prettier": "^2.3.1",
     "ts-jest": "^27.0.2",
     "typescript": "^4.3.2",
     "vite": "^2.3.4",
