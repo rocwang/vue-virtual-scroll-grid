@@ -36,7 +36,8 @@
     "test": "jest",
     "preversion": "npm run lint && npm test",
     "version": "npm run build",
-    "postversion": "npm publish --dry-run"
+    "postversion": "npm publish --dry-run",
+    "semantic-release": "semantic-release"
   },
   "dependencies": {
     "@vueuse/core": "^4.11.1",
@@ -58,7 +59,8 @@
     "ts-jest": "^27.0.2",
     "typescript": "^4.3.2",
     "vite": "^2.3.4",
-    "vue-tsc": ">=0.1.6"
+    "vue-tsc": ">=0.1.6",
+    "semantic-release": "^17.4.3"
   },
   "engines": {
     "node": ">=16"
