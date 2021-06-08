@@ -130,12 +130,11 @@ Required environment variables:
 
 ### How to Release a New Version
 
-```shell
-npm version [major | minor | patch] -m 'build: bump version number'
-npm publish
-```
+We use [semantic-release][semantic-release] to release the library on npm
+automatically.
 
 [demo]: https://grid.kiwiberry.nz/
 [npm]: https://www.npmjs.com/package/vue-virtual-scroll-grid
 [esm]: https://codesandbox.io/s/vue-virtual-scroll-grid-esm-vt27c?file=/App.vue
 [umd]: https://codesandbox.io/s/vue-virtual-scroll-grid-umd-k14w5?file=/index.html
+[semantic-release]: https://semantic-release.gitbook.io/semantic-release/#how-does-it-work
