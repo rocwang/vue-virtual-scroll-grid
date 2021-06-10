@@ -26,7 +26,6 @@
       "require": "./dist/vue-virtual-scroll-grid.umd.js"
     }
   },
-  "version": "1.0.1",
   "license": "MIT",
   "scripts": {
     "serve": "vite preview",
