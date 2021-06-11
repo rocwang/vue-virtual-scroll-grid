@@ -40,7 +40,6 @@
   },
   "dependencies": {
     "@vueuse/core": "^5.0.1",
-    "@vueuse/rxjs": "^5.0.1",
     "ramda": "^0.27.1",
     "rxjs": "^7.1.0",
     "vue": "^3.0.5"

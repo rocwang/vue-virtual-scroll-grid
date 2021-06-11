@@ -1,11 +1,12 @@
 import { fromEvent, fromEventPattern, Observable } from "rxjs";
-import { watchEffect } from "vue";
+import { watchEffect, Ref, ref } from "vue";
 import { partial, pipe, unary } from "ramda";
 import {
   MaybeElementRef,
   ResizeObserverEntry,
   unrefElement,
   useResizeObserver,
+  tryOnUnmounted,
 } from "@vueuse/core";
 import { filter, map, mergeAll, pluck } from "rxjs/operators";
 
@@ -37,4 +38,13 @@ export function fromWindowScroll(elRef: MaybeElementRef): Observable<Element> {
       Boolean(el)
     )
   );
+}
+
+export function useObservable<H>(observable: Observable<H>): Readonly<Ref<H>> {
+  const valueRef = ref<H>();
+  const subscription = observable.subscribe((val) => (valueRef.value = val));
+
+  tryOnUnmounted(() => subscription.unsubscribe());
+
+  return valueRef as Readonly<Ref<H>>;
 }

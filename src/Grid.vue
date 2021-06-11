@@ -41,8 +41,12 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from "vue";
-import { useObservable } from "@vueuse/rxjs";
-import { fromProp, fromResizeObserver, fromWindowScroll } from "./utilites";
+import {
+  fromProp,
+  fromResizeObserver,
+  fromWindowScroll,
+  useObservable,
+} from "./utilites";
 import { PageProvider, pipeline } from "./pipeline";
 
 export default defineComponent({
