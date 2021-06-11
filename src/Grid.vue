@@ -44,8 +44,8 @@ import { defineComponent, onMounted, PropType, ref } from "vue";
 import { fromEvent, fromEventPattern, Observable } from "rxjs";
 import { pluck, share, switchMapTo } from "rxjs/operators";
 import { useObservable } from "@vueuse/rxjs";
-import { fromProp, fromResizeObserver} from "./utilites";
-import {InternalItem, PageProvider, pipeline} from "./pipeline";
+import { fromProp, fromResizeObserver } from "./utilites";
+import { InternalItem, PageProvider, pipeline } from "./pipeline";
 
 export default defineComponent({
   name: "Grid",
@@ -91,10 +91,7 @@ export default defineComponent({
         fromEvent<UIEvent, Element>(
           window,
           "scroll",
-          {
-            passive: true,
-            capture: true,
-          },
+          { passive: true, capture: true },
           () => rootRef.value
         )
       )
@@ -122,9 +119,9 @@ export default defineComponent({
       pageSize$,
       rootResize$,
       scroll$
-    )
-    const buffer = useObservable<InternalItem[]>(buffer$)
-    const contentHeight = useObservable<number>(contentHeight$)
+    );
+    const buffer = useObservable<InternalItem[]>(buffer$);
+    const contentHeight = useObservable<number>(contentHeight$);
     // endregion
 
     return { rootRef, probeRef, buffer, contentHeight };
