@@ -214,19 +214,28 @@ export function getContentHeight(
   return itemHeightWithGap * Math.ceil(length / columns) - rowGap;
 }
 
+interface PipelineInput {
+  length$: Observable<number>;
+  pageProvider$: Observable<PageProvider>;
+  pageSize$: Observable<number>;
+  itemRect$: Observable<DOMRectReadOnly>;
+  rootResize$: Observable<Element>;
+  scroll$: Observable<Element>;
+}
+
 interface PipelineOutput {
   buffer$: Observable<InternalItem[]>;
   contentHeight$: Observable<number>;
 }
 
-export function pipeline(
-  itemRect$: Observable<DOMRectReadOnly>,
-  length$: Observable<number>,
-  pageProvider$: Observable<PageProvider>,
-  pageSize$: Observable<number>,
-  rootResize$: Observable<Element>,
-  scroll$: Observable<Element>
-): PipelineOutput {
+export function pipeline({
+  length$,
+  pageProvider$,
+  pageSize$,
+  itemRect$,
+  rootResize$,
+  scroll$,
+}: PipelineInput): PipelineOutput {
   // region: measurements of the visual grid
   const heightAboveWindow$: Observable<number> = merge(
     rootResize$,

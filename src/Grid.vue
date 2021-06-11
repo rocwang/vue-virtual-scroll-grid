@@ -40,12 +40,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, PropType, ref } from "vue";
-import { fromEvent, fromEventPattern, Observable } from "rxjs";
-import { pluck, share, switchMapTo } from "rxjs/operators";
+import { defineComponent, PropType, ref } from "vue";
 import { useObservable } from "@vueuse/rxjs";
-import { fromProp, fromResizeObserver } from "./utilites";
-import { InternalItem, PageProvider, pipeline } from "./pipeline";
+import { fromProp, fromResizeObserver, fromWindowScroll } from "./utilites";
+import { PageProvider, pipeline } from "./pipeline";
 
 export default defineComponent({
   name: "Grid",
@@ -69,62 +67,33 @@ export default defineComponent({
     },
   },
   setup(props) {
-    // region: props
-    const length$ = fromProp(props, "length");
-    const pageSize$ = fromProp(props, "pageSize");
-    const pageProvider$ = fromProp(props, "pageProvider");
-    // endregion
-
-    // region: refs
+    // template refs
     const rootRef = ref<Element>(document.createElement("div"));
     const probeRef = ref<Element>(document.createElement("div"));
-    // endregion
 
-    // region: rendering triggers
-    // a stream of root elements when scrolling
-    // @ts-expect-error Rxjs has a typing bug on fromEvent() with resultSelector
-    // which is fixed in https://github.com/ReactiveX/rxjs/pull/6447
-    const scroll$: Observable<Element> = fromEventPattern(onMounted).pipe(
-      // use share() to push the "mounted" event from vue, instead of pulling:
-      share(),
-      switchMapTo(
-        fromEvent<UIEvent, Element>(
-          window,
-          "scroll",
-          { passive: true, capture: true },
-          () => rootRef.value
-        )
-      )
-    );
-
-    // a stream of root elements when it is resized
-    const rootResize$: Observable<Element> = fromResizeObserver(rootRef).pipe(
-      pluck("target")
-    );
-
-    // a stream of item size measurements when it is changed
-    const itemRect$: Observable<DOMRectReadOnly> = fromResizeObserver(
-      probeRef
-    ).pipe(pluck("contentRect"));
-    // endregion
-
-    // region: data to render
+    // data to render
     const {
       buffer$, // the items in the current scanning window
       contentHeight$, // the height of the whole list
-    } = pipeline(
-      itemRect$,
-      length$,
-      pageProvider$,
-      pageSize$,
-      rootResize$,
-      scroll$
-    );
-    const buffer = useObservable<InternalItem[]>(buffer$);
-    const contentHeight = useObservable<number>(contentHeight$);
-    // endregion
+    } = pipeline({
+      // streams of prop
+      length$: fromProp(props, "length"),
+      pageProvider$: fromProp(props, "pageProvider"),
+      pageSize$: fromProp(props, "pageSize"),
+      // a stream of item size measurements when it is changed
+      itemRect$: fromResizeObserver(probeRef, "contentRect"),
+      // a stream of root elements when it is resized
+      rootResize$: fromResizeObserver(rootRef, "target"),
+      // a stream of root elements when scrolling
+      scroll$: fromWindowScroll(() => rootRef.value),
+    });
 
-    return { rootRef, probeRef, buffer, contentHeight };
+    return {
+      rootRef,
+      probeRef,
+      buffer: useObservable(buffer$),
+      contentHeight: useObservable(contentHeight$),
+    };
   },
 });
 </script>
