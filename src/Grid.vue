@@ -68,8 +68,8 @@ export default defineComponent({
   },
   setup(props) {
     // template refs
-    const rootRef = ref<Element>(document.createElement("div"));
-    const probeRef = ref<Element>(document.createElement("div"));
+    const rootRef = ref<Element>();
+    const probeRef = ref<Element>();
 
     // data to render
     const {
@@ -85,7 +85,7 @@ export default defineComponent({
       // a stream of root elements when it is resized
       rootResize$: fromResizeObserver(rootRef, "target"),
       // a stream of root elements when scrolling
-      scroll$: fromWindowScroll(() => rootRef.value),
+      scroll$: fromWindowScroll(rootRef),
     });
 
     return {
