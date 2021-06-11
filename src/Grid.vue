@@ -70,9 +70,9 @@ export default defineComponent({
   },
   setup(props) {
     // region: props
-    const length$ = fromProp<number>("length", props);
-    const pageSize$ = fromProp<number>("pageSize", props);
-    const pageProvider$ = fromProp<PageProvider>("pageProvider", props);
+    const length$ = fromProp(props, "length");
+    const pageSize$ = fromProp(props, "pageSize");
+    const pageProvider$ = fromProp(props, "pageProvider");
     // endregion
 
     // region: refs

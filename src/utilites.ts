@@ -4,11 +4,11 @@ import { partial, pipe, unary } from "ramda";
 import { useResizeObserver } from "@vueuse/core";
 import { mergeAll } from "rxjs/operators";
 
-export function fromProp<T>(
-  propName: string,
-  props: Record<string, any>
-): Observable<T> {
-  return new Observable<T>((subscriber) =>
+export function fromProp<T, U extends keyof T>(
+  props: T,
+  propName: U
+): Observable<T[U]> {
+  return new Observable((subscriber) =>
     watchEffect(() => subscriber.next(props[propName]))
   );
 }
