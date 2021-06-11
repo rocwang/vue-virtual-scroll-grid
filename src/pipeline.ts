@@ -225,7 +225,7 @@ export function pipeline(
   pageProvider$: Observable<PageProvider>,
   pageSize$: Observable<number>,
   rootResize$: Observable<Element>,
-  scroll$: Observable<HTMLElement>
+  scroll$: Observable<Element>
 ): PipelineOutput {
   // region: measurements of the visual grid
   const heightAboveWindow$: Observable<number> = merge(
