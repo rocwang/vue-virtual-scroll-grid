@@ -5,6 +5,7 @@
     :length="length"
     :pageSize="pageSize"
     :pageProvider="pageProvider"
+    :scrollTo="scrollTo"
     :class="$style.grid"
   >
     <template v-slot:probe>
@@ -42,7 +43,7 @@ import Grid from "../Grid.vue";
 import Header from "./Header.vue";
 import Control from "./Control.vue";
 import ProductItem from "./ProductItem.vue";
-import { length, pageSize, pageProvider } from "./store";
+import { length, pageSize, pageProvider, scrollTo } from "./store";
 
 export default defineComponent({
   name: "App",
@@ -51,6 +52,7 @@ export default defineComponent({
     length,
     pageSize,
     pageProvider,
+    scrollTo,
   }),
 });
 </script>

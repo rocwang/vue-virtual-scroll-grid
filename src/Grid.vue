@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from "vue";
+import { defineComponent, onUpdated, PropType, ref } from "vue";
 import {
   fromProp,
   fromResizeObserver,
@@ -48,6 +48,7 @@ import {
   useObservable,
 } from "./utilites";
 import { PageProvider, pipeline } from "./pipeline";
+import { once } from "ramda";
 
 export default defineComponent({
   name: "Grid",
@@ -69,6 +70,12 @@ export default defineComponent({
       required: true,
       validator: (value: number) => Number.isInteger(value) && value >= 1,
     },
+    // Scroll to a specific item by index, must be less than the length prop
+    scrollTo: {
+      type: Number as PropType<number>,
+      required: false,
+      validator: (value: number) => Number.isInteger(value) && value >= 0,
+    },
   },
   setup(props) {
     // template refs
@@ -79,6 +86,7 @@ export default defineComponent({
     const {
       buffer$, // the items in the current scanning window
       contentHeight$, // the height of the whole list
+      windowScrollTo$, // the value sent to window.scrollTo()
     } = pipeline({
       // streams of prop
       length$: fromProp(props, "length"),
@@ -90,7 +98,16 @@ export default defineComponent({
       rootResize$: fromResizeObserver(rootRef, "target"),
       // a stream of root elements when scrolling
       scroll$: fromWindowScroll(rootRef),
+      scrollTo$: fromProp(props, "scrollTo"),
     });
+
+    onUpdated(
+      once(() => {
+        windowScrollTo$.subscribe((next) => {
+          window.scrollTo({ top: next, behavior: "smooth" });
+        });
+      })
+    );
 
     return {
       rootRef,

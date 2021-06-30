@@ -1,7 +1,7 @@
 <template>
   <div :class="$style.root">
     <div :class="$style.length">
-      <label for="length" :class="$style.rangeLabel">
+      <label for="length" :class="$style.label">
         Item Count: {{ length }}
       </label>
       <input
@@ -16,7 +16,7 @@
     </div>
 
     <div :class="$style.pageSize">
-      <label for="pageSize" :class="$style.rangeLabel">
+      <label for="pageSize" :class="$style.label">
         Items Per Page: {{ pageSize }}
       </label>
       <input
@@ -67,17 +67,29 @@
         </label>
       </div>
     </div>
+
+    <div :class="$style.scrollTo">
+      <label for="pageSize" :class="$style.label"> Scroll To: </label>
+      <input
+        type="number"
+        id="scrollTo"
+        min="0"
+        max="1000"
+        v-model.number="scrollTo"
+        :class="$style.number"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { collection, length, pageSize } from "./store";
+import { collection, length, pageSize, scrollTo } from "./store";
 
 export default defineComponent({
   name: "Control",
   setup: () => {
-    return { length, pageSize, collection };
+    return { length, pageSize, collection, scrollTo };
   },
 });
 </script>
@@ -96,6 +108,7 @@ export default defineComponent({
   grid-template:
     "length pageProvider" auto
     "pageSize pageProvider" auto
+    "scrollTo pageProvider" auto
     / 2fr 1fr;
   place-items: center stretch;
   grid-gap: 1.5rem;
@@ -115,6 +128,10 @@ export default defineComponent({
   display: flex;
   flex-flow: column nowrap;
   justify-content: flex-start;
+}
+
+.scrollTo {
+  grid-area: scrollTo;
 }
 
 .radioList {
@@ -140,7 +157,16 @@ export default defineComponent({
   width: 100%;
 }
 
-.rangeLabel {
+.number {
+  background-color: var(--color-rice);
+  width: 100%;
+  border: 1px solid var(--color-black);
+  padding: 5px;
+  font-size: 1.4rem;
+  color: var(--color-black);
+}
+
+.label {
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
@@ -153,11 +179,8 @@ export default defineComponent({
 @media (min-width: 760px) {
   .root {
     grid-template:
-      "length pageSize pageProvider" auto
-      / 1fr 1fr 1fr;
-  }
-
-  .pageProvider {
+      "length pageSize pageProvider scrollTo" auto
+      / 2fr 2fr 2fr 1fr;
   }
 
   .category {
