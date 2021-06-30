@@ -225,7 +225,7 @@ interface PipelineInput {
   itemRect$: Observable<DOMRectReadOnly>;
   rootResize$: Observable<Element>;
   scroll$: Observable<Element>;
-  scrollTo$: Observable<number>;
+  scrollTo$: Observable<number | undefined>;
 }
 
 interface PipelineOutput {
