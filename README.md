@@ -29,11 +29,12 @@ npm install vue-virtual-scroll-grid
 
 ## Available Props
 
-| Name           | Description                                                               | Type                                                           | Validation                                      |
-|----------------|---------------------------------------------------------------------------|----------------------------------------------------------------|-------------------------------------------------|
-| `length`       | The number of items in the list                                           | `number`                                                       | Required, an integer greater than or equal to 0 |
-| `pageProvider` | The callback that returns a page of items as a promise                    | `(pageNumber: number, pageSize: number) => Promise<unknown[]>` | Required                                        |
-| `pageSize`     | The number of items in a page from the item provider (e.g. a backend API) | `number`                                                       | Required, an integer greater than or equal to 1 |
+| Name           | Description                                                               | Type                                                           | Validation                                                                      |
+|----------------|---------------------------------------------------------------------------|----------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `length`       | The number of items in the list                                           | `number`                                                       | Required, an integer greater than or equal to 0                                 |
+| `pageProvider` | The callback that returns a page of items as a promise                    | `(pageNumber: number, pageSize: number) => Promise<unknown[]>` | Required                                                                        |
+| `pageSize`     | The number of items in a page from the item provider (e.g. a backend API) | `number`                                                       | Required, an integer greater than or equal to 1                                 |
+| `scrollTo`     | Scroll to a specific item by index                                        | `number`                                                       | Optional, an integer from 0 to the `length` prop - 1                            |
 
 Example:
 
@@ -41,6 +42,7 @@ Example:
 <Grid :length="1000"
       :pageProvider="async (pageNumber, pageSize) => Array(pageSize).fill('x')"
       :pageSize="40"
+      :scrollTo="10"
 >
   <!-- ...slots -->
 </Grid>

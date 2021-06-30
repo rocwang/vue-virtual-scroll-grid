@@ -1,24 +1,28 @@
-import { combineLatest, merge, Observable, range } from "rxjs";
+import { combineLatest, merge, Observable, of, range } from "rxjs";
 import {
   distinct,
   distinctUntilChanged,
+  filter,
   map,
   mergeMap,
   scan,
   shareReplay,
   switchMap,
+  take,
   withLatestFrom,
 } from "rxjs/operators";
 import {
   __,
   addIndex,
   apply,
+  complement,
   concat,
   difference,
   equals,
   identity,
   ifElse,
   insertAll,
+  isNil,
   map as ramdaMap,
   pipe,
   remove,
@@ -221,11 +225,13 @@ interface PipelineInput {
   itemRect$: Observable<DOMRectReadOnly>;
   rootResize$: Observable<Element>;
   scroll$: Observable<Element>;
+  scrollTo$: Observable<number | undefined>;
 }
 
 interface PipelineOutput {
   buffer$: Observable<InternalItem[]>;
   contentHeight$: Observable<number>;
+  windowScrollTo$: Observable<number>;
 }
 
 export function pipeline({
@@ -235,6 +241,7 @@ export function pipeline({
   itemRect$,
   rootResize$,
   scroll$,
+  scrollTo$,
 }: PipelineInput): PipelineOutput {
   // region: measurements of the visual grid
   const heightAboveWindow$: Observable<number> = merge(
@@ -250,6 +257,25 @@ export function pipeline({
   const contentHeight$: Observable<number> = combineLatest(
     [resizeMeasurement$, length$],
     getContentHeight
+  );
+  // endregion
+
+  // region: scroll to a given item by index
+  const windowScrollTo$ = scrollTo$.pipe(
+    filter(complement(isNil)),
+    switchMap((scrollTo) =>
+      combineLatest([of(scrollTo), resizeMeasurement$, rootResize$]).pipe(
+        take(1)
+      )
+    ),
+    map(
+      ([scrollTo, { columns, itemHeightWithGap }, rootEl]) =>
+        // The offset within the grid
+        Math.floor(scrollTo / columns) * itemHeightWithGap +
+        // The offset of grid root to the document
+        (rootEl.getBoundingClientRect().top +
+          document.documentElement.scrollTop)
+    )
   );
   // endregion
 
@@ -285,5 +311,5 @@ export function pipeline({
   ).pipe(scan(accumulateBuffer, []));
   // endregion
 
-  return { buffer$, contentHeight$ };
+  return { buffer$, contentHeight$, windowScrollTo$ };
 }

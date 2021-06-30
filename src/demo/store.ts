@@ -4,6 +4,7 @@ import { curry, prop } from "ramda";
 
 export const length = ref<number>(1000);
 export const pageSize = ref<number>(40);
+export const scrollTo = ref<number | undefined>(undefined);
 
 export type Collection = "" | "all-mens" | "womens-view-all";
 export const collection = ref<Collection>("");
