@@ -16,7 +16,8 @@
   },
   "homepage": "https://grid.kiwiberry.nz/",
   "files": [
-    "dist"
+    "dist",
+    "src/*.*"
   ],
   "main": "./dist/vue-virtual-scroll-grid.umd.js",
   "module": "./dist/vue-virtual-scroll-grid.es.js",
@@ -42,6 +43,7 @@
     "@vueuse/core": "^5.0.3",
     "ramda": "^0.27.1",
     "rxjs": "^7.1.0",
+    "vite-dts": "^1.0.3",
     "vue": "^3.0.5"
   },
   "devDependencies": {
