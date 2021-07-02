@@ -1,12 +1,13 @@
 import { ConfigEnv, UserConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { homedir } from "os";
-import { readFileSync, existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
+import dts from "vite-dts";
 
 export default ({ mode }: ConfigEnv): UserConfig => {
   return {
-    plugins: [vue()],
+    plugins: [vue(), dts()],
     server: {
       open: true,
       https: existsSync(`${homedir()}/.localhost_ssl/server.key`)
@@ -26,7 +27,7 @@ export default ({ mode }: ConfigEnv): UserConfig => {
               name: "VirtualScrollGrid",
             },
             rollupOptions: {
-              // make sure to externalize deps that shouldn't be bundled
+              // Make sure to externalize deps that shouldn't be bundled
               // into your library
               external: ["vue"],
               output: {
@@ -35,8 +36,16 @@ export default ({ mode }: ConfigEnv): UserConfig => {
                 globals: {
                   vue: "Vue",
                 },
+                // Since we publish our ./src folder, there's no point
+                // in bloating sourcemaps with another copy of it.
+                sourcemapExcludeSources: true,
               },
             },
+            sourcemap: true,
+            // Reduce bloat from legacy polyfills.
+            target: "esnext",
+            // Leave minification up to applications.
+            minify: false,
           },
   };
 };
