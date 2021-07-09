@@ -1,16 +1,20 @@
-import { combineLatest, merge, Observable, of, range } from "rxjs";
 import {
+  combineLatest,
   distinct,
   distinctUntilChanged,
   filter,
   map,
+  merge,
   mergeMap,
+  Observable,
+  of,
+  range,
   scan,
   shareReplay,
   switchMap,
   take,
   withLatestFrom,
-} from "rxjs/operators";
+} from "rxjs";
 import {
   __,
   addIndex,

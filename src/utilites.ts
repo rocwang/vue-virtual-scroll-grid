@@ -1,14 +1,20 @@
-import { fromEvent, fromEventPattern, Observable } from "rxjs";
-import { watchEffect, Ref, ref } from "vue";
+import {
+  filter,
+  fromEvent,
+  fromEventPattern,
+  mergeAll,
+  Observable,
+  pluck,
+} from "rxjs";
+import { Ref, ref, watchEffect } from "vue";
 import { partial, pipe, unary } from "ramda";
 import {
   MaybeElementRef,
   ResizeObserverEntry,
+  tryOnUnmounted,
   unrefElement,
   useResizeObserver,
-  tryOnUnmounted,
 } from "@vueuse/core";
-import { filter, map, mergeAll, pluck } from "rxjs/operators";
 
 export function fromProp<T, U extends keyof T>(
   props: T,
@@ -29,11 +35,15 @@ export function fromResizeObserver<T extends keyof ResizeObserverEntry>(
 }
 
 export function fromWindowScroll(elRef: MaybeElementRef): Observable<Element> {
-  return fromEvent(window, "scroll", {
-    passive: true,
-    capture: true,
-  }).pipe(
-    map(() => unrefElement(elRef)),
+  return fromEvent(
+    window,
+    "scroll",
+    {
+      passive: true,
+      capture: true,
+    },
+    () => unrefElement(elRef)
+  ).pipe(
     filter<Element | undefined | null, Element>((el): el is Element =>
       Boolean(el)
     )
