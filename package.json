@@ -40,18 +40,18 @@
     "semantic-release": "semantic-release"
   },
   "dependencies": {
-    "@vueuse/core": "^5.3.0",
+    "@vueuse/core": "^6.0.0",
     "ramda": "^0.27.1",
     "rxjs": "^7.3.0",
     "vite-dts": "^1.0.3",
-    "vue": "^3.0.5"
+    "vue": "^3.2.2"
   },
   "devDependencies": {
     "@types/jest": "^27.0.1",
     "@types/node": "^16.6.1",
     "@types/ramda": "^0.27.41",
     "@vitejs/plugin-vue": "^1.4.0",
-    "@vue/compiler-sfc": "^3.1.5",
+    "@vue/compiler-sfc": "^3.2.2",
     "algoliasearch": "^4.10.2",
     "jest": "^27.0.3",
     "lodash-es": "^4.17.21",
@@ -60,7 +60,7 @@
     "ts-jest": "^27.0.2",
     "typescript": "^4.3.4",
     "vite": "^2.4.4",
-    "vue-tsc": ">=0.2.1"
+    "vue-tsc": ">=0.2.3"
   },
   "engines": {
     "node": ">=16"
