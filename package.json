@@ -51,7 +51,7 @@
     "@types/node": "^16.7.1",
     "@types/ramda": "^0.27.41",
     "@vitejs/plugin-vue": "^1.4.0",
-    "@vue/compiler-sfc": "^3.2.2",
+    "@vue/compiler-sfc": "^3.2.4",
     "algoliasearch": "^4.10.2",
     "jest": "^27.0.3",
     "lodash-es": "^4.17.21",
