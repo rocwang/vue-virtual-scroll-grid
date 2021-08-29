@@ -32,7 +32,7 @@
     "serve": "vite preview",
     "build": "vite build",
     "dev": "vite",
-    "lint": "vue-tsc --noEmit",
+    "lint": "vue-tsc --noEmit --skipLibCheck",
     "test": "jest",
     "preversion": "npm run lint && npm test",
     "version": "npm run build",
