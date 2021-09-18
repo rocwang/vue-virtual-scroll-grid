@@ -49,7 +49,7 @@ import {
 } from "./utilites";
 import { PageProvider, pipeline } from "./pipeline";
 import { once } from "ramda";
-import { MaybeElementRef, VueInstance } from "@vueuse/core";
+import { VueInstance } from "@vueuse/core";
 
 export default defineComponent({
   name: "Grid",
