@@ -49,6 +49,7 @@ import {
 } from "./utilites";
 import { PageProvider, pipeline } from "./pipeline";
 import { once } from "ramda";
+import { MaybeElementRef, VueInstance } from "@vueuse/core";
 
 export default defineComponent({
   name: "Grid",
@@ -79,8 +80,8 @@ export default defineComponent({
   },
   setup(props) {
     // template refs
-    const rootRef = ref<Element>();
-    const probeRef = ref<Element>();
+    const rootRef = ref<HTMLElement | SVGElement | VueInstance>();
+    const probeRef = ref<HTMLElement | SVGElement | VueInstance>();
 
     // data to render
     const {
