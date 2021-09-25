@@ -44,7 +44,7 @@
     "ramda": "^0.27.1",
     "rxjs": "^7.3.0",
     "vite-dts": "^1.0.3",
-    "vue": "^3.2.18"
+    "vue": "^3.2.19"
   },
   "devDependencies": {
     "@types/jest": "^27.0.2",
