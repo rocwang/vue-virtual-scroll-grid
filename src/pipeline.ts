@@ -152,9 +152,9 @@ export function accumulateAllItems(
       __,
       new Array(Math.max(length - allItems.length, 0)).fill(undefined)
     ) as (a: unknown[]) => unknown[],
-    slice(0, length),
     remove(pageNumber * items.length, items.length),
-    insertAll(pageNumber * items.length, items)
+    insertAll(pageNumber * items.length, items),
+    slice(0, length)
   )(allItems);
 }
 
