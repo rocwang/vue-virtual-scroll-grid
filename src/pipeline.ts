@@ -147,7 +147,7 @@ export function accumulateAllItems(
   allItems: unknown[],
   [{ pageNumber, items }, length]: [ItemsByPage, number]
 ): unknown[] {
-  return pipe(
+  return pipe<unknown[], unknown[], unknown[], unknown[], unknown[]>(
     concat(
       __,
       new Array(Math.max(length - allItems.length, 0)).fill(undefined)
@@ -169,7 +169,7 @@ export function getVisibleItems(
   { columns, itemWidthWithGap, itemHeightWithGap }: ResizeMeasurement,
   allItems: unknown[]
 ): InternalItem[] {
-  return pipe(
+  return pipe<unknown[], unknown[], InternalItem[]>(
     slice(bufferedOffset, bufferedOffset + bufferedLength),
     addIndex(ramdaMap)((value, localIndex) => {
       const index = bufferedOffset + localIndex;
