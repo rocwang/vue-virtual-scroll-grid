@@ -49,7 +49,7 @@
     "@types/jest": "^27.0.3",
     "@types/node": "^16.11.11",
     "@types/ramda": "^0.27.50",
-    "@vitejs/plugin-vue": "^1.9.4",
+    "@vitejs/plugin-vue": "^1.10.1",
     "algoliasearch": "^4.10.5",
     "jest": "^27.4.2",
     "lodash-es": "^4.17.21",
