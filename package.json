@@ -43,7 +43,7 @@
     "@vueuse/core": "^7.0.0",
     "ramda": "^0.27.1",
     "rxjs": "^7.4.0",
-    "vue": "^3.2.21"
+    "vue": "^3.2.23"
   },
   "devDependencies": {
     "@types/jest": "^27.0.3",
