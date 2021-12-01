@@ -24,7 +24,6 @@ import {
   difference,
   equals,
   identity,
-  ifElse,
   insertAll,
   isNil,
   map as ramdaMap,
@@ -147,11 +146,11 @@ export function accumulateAllItems(
   allItems: unknown[],
   [{ pageNumber, items }, length]: [ItemsByPage, number]
 ): unknown[] {
-  return pipe<unknown[], unknown[], unknown[], unknown[], unknown[]>(
+  return pipe<unknown[][], unknown[], unknown[], unknown[], unknown[]>(
     concat(
       __,
       new Array(Math.max(length - allItems.length, 0)).fill(undefined)
-    ) as (a: unknown[]) => unknown[],
+    ),
     remove(pageNumber * items.length, items.length),
     insertAll(pageNumber * items.length, items),
     slice(0, length)
@@ -169,7 +168,7 @@ export function getVisibleItems(
   { columns, itemWidthWithGap, itemHeightWithGap }: ResizeMeasurement,
   allItems: unknown[]
 ): InternalItem[] {
-  return pipe<unknown[], unknown[], InternalItem[]>(
+  return pipe<unknown[][], unknown[], InternalItem[]>(
     slice(bufferedOffset, bufferedOffset + bufferedLength),
     addIndex(ramdaMap)((value, localIndex) => {
       const index = bufferedOffset + localIndex;
@@ -204,13 +203,7 @@ export function accumulateBuffer(
 
   return pipe(
     without(itemsToDelete),
-    ramdaMap(
-      ifElse(
-        replaceMap.has.bind(replaceMap),
-        replaceMap.get.bind(replaceMap),
-        identity
-      )
-    ),
+    ramdaMap((item) => replaceMap.get(item) ?? item),
     concat(__, itemsToAppend)
   )(buffer);
 }
@@ -293,12 +286,11 @@ export function pipeline({
     bufferMeta$,
     length$,
     pageSize$,
-    pageProvider$,
   ]).pipe(
-    mergeMap(apply<any, Observable<number>>(getObservableOfVisiblePageNumbers)),
+    mergeMap(apply(getObservableOfVisiblePageNumbers)),
     distinct(identity, merge(pageSize$, pageProvider$)),
     withLatestFrom(pageSize$, pageProvider$),
-    mergeMap(apply<any, Promise<ItemsByPage>>(callPageProvider)),
+    mergeMap(apply(callPageProvider)),
     shareReplay(1)
   );
 
