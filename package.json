@@ -16,21 +16,23 @@
   },
   "homepage": "https://grid.kiwiberry.nz/",
   "files": [
-    "dist",
-    "src/*.*"
+    "dist"
   ],
   "main": "./dist/vue-virtual-scroll-grid.umd.js",
   "module": "./dist/vue-virtual-scroll-grid.es.js",
+  "types": "./dist/vue-virtual-scroll-grid.es.d.ts",
   "exports": {
     ".": {
       "import": "./dist/vue-virtual-scroll-grid.es.js",
-      "require": "./dist/vue-virtual-scroll-grid.umd.js"
+      "require": "./dist/vue-virtual-scroll-grid.umd.js",
+      "types": "./dist/vue-virtual-scroll-grid.es.d.ts"
     }
   },
   "license": "MIT",
   "scripts": {
+    "gen:types": "vue-tsc --declaration --emitDeclarationOnly",
     "serve": "vite preview",
-    "build": "vite build",
+    "build": "vite build && npm run gen:types",
     "dev": "vite",
     "lint": "vue-tsc --noEmit --skipLibCheck",
     "test": "jest",
