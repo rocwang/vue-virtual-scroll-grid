@@ -18,14 +18,14 @@
   "files": [
     "dist"
   ],
-  "main": "./dist/vue-virtual-scroll-grid.umd.js",
-  "module": "./dist/vue-virtual-scroll-grid.es.js",
-  "types": "./dist/vue-virtual-scroll-grid.es.d.ts",
+  "module": "./dist/index.es.js",
+  "main": "./dist/index.umd.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/vue-virtual-scroll-grid.es.js",
-      "require": "./dist/vue-virtual-scroll-grid.umd.js",
-      "types": "./dist/vue-virtual-scroll-grid.es.d.ts"
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.umd.js",
+      "types": "./dist/index.d.ts"
     }
   },
   "license": "MIT",
