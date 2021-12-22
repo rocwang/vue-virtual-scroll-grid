@@ -3,11 +3,10 @@ import vue from "@vitejs/plugin-vue";
 import { homedir } from "os";
 import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
-import dts from "vite-dts";
 
 export default ({ mode }: ConfigEnv): UserConfig => {
   return {
-    plugins: [vue(), dts()],
+    plugins: [vue()],
     server: {
       open: true,
       https: existsSync(`${homedir()}/.localhost_ssl/server.key`)
@@ -23,8 +22,9 @@ export default ({ mode }: ConfigEnv): UserConfig => {
         ? {}
         : {
             lib: {
-              entry: resolve(__dirname, "src/Grid.vue"),
+              entry: resolve(__dirname, "src/index.ts"),
               name: "VirtualScrollGrid",
+              fileName: (format) => `index.${format}.js`,
             },
             rollupOptions: {
               // Make sure to externalize deps that shouldn't be bundled

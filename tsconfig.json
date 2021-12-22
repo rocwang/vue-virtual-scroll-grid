@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "declaration": true,
+    "declaration": false,
+    "baseUrl": ".",
+    "outDir": "dist",
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
@@ -12,5 +14,5 @@
     "lib": ["esnext", "dom"],
     "types": ["vite/client", "jest"],
   },
-  "include": ["src/*.ts", "src/*.d.ts", "src/*.tsx", "src/*.vue"]
+  "include": ["src/*.ts", "src/*.tsx", "src/*.vue"]
 }
