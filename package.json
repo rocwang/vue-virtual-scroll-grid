@@ -51,7 +51,7 @@
     "@types/jest": "^27.0.3",
     "@types/node": "^16.11.11",
     "@types/ramda": "^0.27.57",
-    "@vitejs/plugin-vue": "^1.10.1",
+    "@vitejs/plugin-vue": "^2.0.1",
     "algoliasearch": "^4.10.5",
     "jest": "^27.4.2",
     "lodash-es": "^4.17.21",
