@@ -65,6 +65,14 @@ export default defineComponent({
       type: Function as PropType<PageProvider>,
       required: true,
     },
+    // Wait a short time until calling the page provider with the latest page
+    // numbers. It's useful for avoid network requests of skimmed pages.
+    pageProviderDebounceTime: {
+      type: Number as PropType<number>,
+      required: false,
+      default: 0,
+      validator: (value: number) => Number.isInteger(value) && value >= 0,
+    },
     // The number of items in a page from the item provider (e.g. a backend API).
     pageSize: {
       type: Number as PropType<number>,
@@ -92,6 +100,7 @@ export default defineComponent({
       // streams of prop
       length$: fromProp(props, "length"),
       pageProvider$: fromProp(props, "pageProvider"),
+      pageProviderDebounceTime$: fromProp(props, "pageProviderDebounceTime"),
       pageSize$: fromProp(props, "pageSize"),
       // a stream of item size measurements when it is changed
       itemRect$: fromResizeObserver(probeRef, "contentRect"),
