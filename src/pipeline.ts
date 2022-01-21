@@ -1,10 +1,12 @@
 import {
   combineLatest,
+  debounceTime,
   distinct,
   distinctUntilChanged,
   filter,
   map,
   merge,
+  mergeAll,
   mergeMap,
   Observable,
   of,
@@ -218,6 +220,7 @@ export function getContentHeight(
 interface PipelineInput {
   length$: Observable<number>;
   pageProvider$: Observable<PageProvider>;
+  pageProviderDebounceTime$: Observable<number>;
   pageSize$: Observable<number>;
   itemRect$: Observable<DOMRectReadOnly>;
   rootResize$: Observable<Element>;
@@ -234,6 +237,7 @@ interface PipelineOutput {
 export function pipeline({
   length$,
   pageProvider$,
+  pageProviderDebounceTime$,
   pageSize$,
   itemRect$,
   rootResize$,
@@ -282,17 +286,25 @@ export function pipeline({
     getBufferMeta()
   ).pipe(distinctUntilChanged<BufferMeta>(equals));
 
-  const itemsByPage$: Observable<ItemsByPage> = combineLatest([
+  const visiblePageNumbers$ = combineLatest([
     bufferMeta$,
     length$,
     pageSize$,
-  ]).pipe(
-    mergeMap(apply(getObservableOfVisiblePageNumbers)),
-    distinct(identity, merge(pageSize$, pageProvider$)),
-    withLatestFrom(pageSize$, pageProvider$),
-    mergeMap(apply(callPageProvider)),
-    shareReplay(1)
+  ]).pipe(map(apply(getObservableOfVisiblePageNumbers)));
+
+  const pageNumber$ = pageProviderDebounceTime$.pipe(
+    switchMap((time) =>
+      visiblePageNumbers$.pipe(time === 0 ? identity : debounceTime(time))
+    ),
+    mergeAll(),
+    distinct(identity, merge(pageSize$, pageProvider$))
   );
+
+  const itemsByPage$: Observable<ItemsByPage> = combineLatest([
+    pageNumber$,
+    pageSize$,
+    pageProvider$,
+  ]).pipe(mergeMap(apply(callPageProvider)), shareReplay(1));
 
   const replayLength$ = length$.pipe(shareReplay(1));
 

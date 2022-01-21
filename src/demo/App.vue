@@ -5,6 +5,7 @@
     :length="length"
     :pageSize="pageSize"
     :pageProvider="pageProvider"
+    :pageProviderDebounceTime="0"
     :scrollTo="scrollTo"
     :class="$style.grid"
   >
