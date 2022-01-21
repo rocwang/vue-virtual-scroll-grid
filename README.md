@@ -3,8 +3,8 @@
 This is a reusable component for Vue 3 that renders a list with a huge number of
 items (e.g. 1000+ items) as a grid in a performant way.
 
-* [Demo][demo]
-* [NPM Package][npm]
+- [Demo][demo]
+- [NPM Package][npm]
 
 ## Features
 
@@ -18,8 +18,8 @@ items (e.g. 1000+ items) as a grid in a performant way.
 
 ## Code Examples
 
-* [As an ES module (with a bundler)][esm]
-* [As an Universal Module Definition (no bundler)][umd]
+- [As an ES module (with a bundler)][esm]
+- [As an Universal Module Definition (no bundler)][umd]
 
 ## Install
 
@@ -29,20 +29,22 @@ npm install vue-virtual-scroll-grid
 
 ## Available Props
 
-| Name           | Description                                                               | Type                                                           | Validation                                                                      |
-|----------------|---------------------------------------------------------------------------|----------------------------------------------------------------|---------------------------------------------------------------------------------|
-| `length`       | The number of items in the list                                           | `number`                                                       | Required, an integer greater than or equal to 0                                 |
-| `pageProvider` | The callback that returns a page of items as a promise                    | `(pageNumber: number, pageSize: number) => Promise<unknown[]>` | Required                                                                        |
-| `pageSize`     | The number of items in a page from the item provider (e.g. a backend API) | `number`                                                       | Required, an integer greater than or equal to 1                                 |
-| `scrollTo`     | Scroll to a specific item by index                                        | `number`                                                       | Optional, an integer from 0 to the `length` prop - 1                            |
+| Name                       | Description                                                               | Type                                                           | Validation                                           |
+| -------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- | ---------------------------------------------------- |
+| `length`                   | The number of items in the list                                           | `number`                                                       | Required, an integer greater than or equal to 0      |
+| `pageProvider`             | The callback that returns a page of items as a promise                    | `(pageNumber: number, pageSize: number) => Promise<unknown[]>` | Required                                             |
+| `pageProviderDebounceTime` | Debounce window in milliseconds on the calls to `pageProvider`            | `number`                                                       | Optional, an integer greater than or equal to 0      |
+| `pageSize`                 | The number of items in a page from the item provider (e.g. a backend API) | `number`                                                       | Required, an integer greater than or equal to 1      |
+| `scrollTo`                 | Scroll to a specific item by index                                        | `number`                                                       | Optional, an integer from 0 to the `length` prop - 1 |
 
 Example:
 
 ```vue
-<Grid :length="1000"
-      :pageProvider="async (pageNumber, pageSize) => Array(pageSize).fill('x')"
-      :pageSize="40"
-      :scrollTo="10"
+<Grid
+  :length="1000"
+  :pageProvider="async (pageNumber, pageSize) => Array(pageSize).fill('x')"
+  :pageSize="40"
+  :scrollTo="10"
 >
   <!-- ...slots -->
 </Grid>
@@ -121,16 +123,15 @@ items can be 200px x 200px when the view is under 768px and 300px x 500px above
 
 Required environment variables:
 
-* `VITE_APP_ID`: An Algolia app ID
-* `VITE_SEARCH_ONLY_API_KEY`: The search API key for the Algolia app above
+- `VITE_APP_ID`: An Algolia app ID
+- `VITE_SEARCH_ONLY_API_KEY`: The search API key for the Algolia app above
 
-
-- Setup: `npm install`
-- Run dev server: `npm run dev `
-- Lint (type check): `npm run lint `
-- Build the library: `npm run build `
-- Build the demo: `npm run build -- --mode=demo `
-- Preview the locally built demo: `npm run serve `
+* Setup: `npm install`
+* Run dev server: `npm run dev `
+* Lint (type check): `npm run lint `
+* Build the library: `npm run build `
+* Build the demo: `npm run build -- --mode=demo `
+* Preview the locally built demo: `npm run serve `
 
 ### How to Release a New Version
 

@@ -65,8 +65,8 @@ export default defineComponent({
       type: Function as PropType<PageProvider>,
       required: true,
     },
-    // Wait a short time until calling the page provider with the latest page
-    // numbers. It's useful for avoid network requests of skimmed pages.
+    // Debounce window in milliseconds on the calls to `pageProvider`,
+    // which is useful for avoiding network requests of skimmed pages.
     pageProviderDebounceTime: {
       type: Number as PropType<number>,
       required: false,
