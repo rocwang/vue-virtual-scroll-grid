@@ -15,7 +15,6 @@ import {
   shareReplay,
   switchMap,
   take,
-  withLatestFrom,
 } from "rxjs";
 import {
   __,
@@ -35,6 +34,7 @@ import {
   without,
   zip,
 } from "ramda";
+import { getVerticalScrollParent } from "./utilites";
 
 export function computeHeightAboveWindowOf(el: Element): number {
   const top = el.getBoundingClientRect().top;
@@ -228,10 +228,12 @@ interface PipelineInput {
   scrollTo$: Observable<number | undefined>;
 }
 
+export type ScrollAction = [Element, number];
+
 interface PipelineOutput {
   buffer$: Observable<InternalItem[]>;
   contentHeight$: Observable<number>;
-  windowScrollTo$: Observable<number>;
+  scrollAction$: Observable<ScrollAction>;
 }
 
 export function pipeline({
@@ -262,20 +264,26 @@ export function pipeline({
   // endregion
 
   // region: scroll to a given item by index
-  const windowScrollTo$ = scrollTo$.pipe(
+  const scrollAction$: Observable<ScrollAction> = scrollTo$.pipe(
     filter(complement(isNil)),
-    switchMap((scrollTo) =>
-      combineLatest([of(scrollTo), resizeMeasurement$, rootResize$]).pipe(
-        take(1)
-      )
+    switchMap<number, Observable<[number, ResizeMeasurement, Element]>>(
+      (scrollTo) =>
+        combineLatest([of(scrollTo), resizeMeasurement$, rootResize$]).pipe(
+          take(1)
+        )
     ),
-    map(
-      ([scrollTo, { columns, itemHeightWithGap }, rootEl]) =>
-        // The offset within the grid
-        Math.floor(scrollTo / columns) * itemHeightWithGap +
-        // The offset of grid root to the document
-        (rootEl.getBoundingClientRect().top +
-          document.documentElement.scrollTop)
+    map<[number, ResizeMeasurement, Element], ScrollAction>(
+      ([scrollTo, { columns, itemHeightWithGap }, rootEl]) => {
+        const verticalScrollEl = getVerticalScrollParent(rootEl);
+
+        const scrollTop =
+          // The offset within the grid container
+          Math.floor((scrollTo - 1) / columns) * itemHeightWithGap +
+          // Offset to the offsetParent
+          (rootEl instanceof HTMLElement ? rootEl.offsetTop : 0);
+
+        return [verticalScrollEl, scrollTop];
+      }
     )
   );
   // endregion
@@ -319,5 +327,5 @@ export function pipeline({
   ).pipe(scan(accumulateBuffer, []));
   // endregion
 
-  return { buffer$, contentHeight$, windowScrollTo$ };
+  return { buffer$, contentHeight$, scrollAction$: scrollAction$ };
 }

@@ -58,3 +58,35 @@ export function useObservable<H>(observable: Observable<H>): Readonly<Ref<H>> {
 
   return valueRef as Readonly<Ref<H>>;
 }
+
+export function getVerticalScrollParent(
+  element: Element,
+  includeHidden: boolean = false
+): Element {
+  const style = getComputedStyle(element);
+  const excludeStaticParent = style.position === "absolute";
+  const overflowRegex = includeHidden
+    ? /(auto|scroll|hidden)/
+    : /(auto|scroll)/;
+
+  if (style.position === "fixed") {
+    return document.body;
+  }
+
+  for (
+    let parent: Element | null = element;
+    (parent = parent.parentElement);
+
+  ) {
+    const parentStyle = getComputedStyle(parent);
+
+    if (excludeStaticParent && parentStyle.position === "static") {
+      continue;
+    }
+
+    if (overflowRegex.test(parentStyle.overflow + parentStyle.overflowY))
+      return parent;
+  }
+
+  return document.scrollingElement || document.documentElement;
+}
