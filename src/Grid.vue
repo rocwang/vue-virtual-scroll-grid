@@ -47,7 +47,7 @@ import {
   fromWindowScroll,
   useObservable,
 } from "./utilites";
-import { PageProvider, pipeline } from "./pipeline";
+import { PageProvider, pipeline, ScrollAction } from "./pipeline";
 import { once } from "ramda";
 import { VueInstance } from "@vueuse/core";
 
@@ -95,7 +95,7 @@ export default defineComponent({
     const {
       buffer$, // the items in the current scanning window
       contentHeight$, // the height of the whole list
-      windowScrollTo$, // the value sent to window.scrollTo()
+      scrollAction$, // the value sent to window.scrollTo()
     } = pipeline({
       // streams of prop
       length$: fromProp(props, "length"),
@@ -113,8 +113,8 @@ export default defineComponent({
 
     onUpdated(
       once(() => {
-        windowScrollTo$.subscribe((next) => {
-          window.scrollTo({ top: next, behavior: "smooth" });
+        scrollAction$.subscribe(([el, top]: ScrollAction) => {
+          el.scrollTo({ top, behavior: "smooth" });
         });
       })
     );
