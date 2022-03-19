@@ -276,12 +276,30 @@ export function pipeline({
       ([scrollTo, { columns, itemHeightWithGap }, rootEl]) => {
         const verticalScrollEl = getVerticalScrollParent(rootEl);
 
-        const scrollTop =
-          // The offset within the grid container
-          Math.floor((scrollTo - 1) / columns) * itemHeightWithGap +
-          // Offset to the offsetParent
-          (rootEl instanceof HTMLElement ? rootEl.offsetTop : 0);
+        const computedStyle = window.getComputedStyle(rootEl);
 
+        const gridPaddingTop = parseInt(
+          computedStyle.getPropertyValue("padding-top")
+        );
+        const gridBoarderTop = parseInt(
+          computedStyle.getPropertyValue("border-top")
+        );
+
+        const topToGridContainer =
+          rootEl instanceof HTMLElement &&
+          verticalScrollEl instanceof HTMLElement
+            ? rootEl.offsetTop - verticalScrollEl.offsetTop
+            : 0;
+
+        // The offset within the scroll container
+        const scrollTop =
+          // row count * row height
+          Math.floor(scrollTo / columns) * itemHeightWithGap +
+          // top to the scroll container
+          topToGridContainer +
+          // the padding + boarder top of grid
+          gridPaddingTop +
+          gridBoarderTop;
         return [verticalScrollEl, scrollTop];
       }
     )
