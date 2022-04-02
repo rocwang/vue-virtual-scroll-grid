@@ -179,7 +179,7 @@ describe("accumulateAllItems", () => {
   it("can extend allItems", () => {
     const allItems = accumulateAllItems(
       [0, 1, 2, 3, 4, 5],
-      [{ pageNumber: 1, items: ["a", "b", "c"] }, 10]
+      [{ pageNumber: 1, items: ["a", "b", "c"] }, 10, 3]
     );
 
     expect(allItems).toEqual([
@@ -199,10 +199,28 @@ describe("accumulateAllItems", () => {
   it("can shrink allItems", () => {
     const allItems = accumulateAllItems(
       [0, 1, 2, 3, 4, 5, 6],
-      [{ pageNumber: 0, items: ["a", "b", "c"] }, 5]
+      [{ pageNumber: 0, items: ["a", "b", "c"] }, 5, 3]
     );
 
     expect(allItems).toEqual(["a", "b", "c", 3, 4]);
+  });
+
+  it("behave properly when pageProvider returns fewer items than pageSize", () => {
+    const allItems = accumulateAllItems(
+      [0, 1, 2, 3, 4, 5],
+      [{ pageNumber: 0, items: ["a", "b"] }, 6, 3]
+    );
+
+    expect(allItems).toEqual(["a", "b", undefined, 3, 4, 5]);
+  });
+
+  it("behave properly when pageProvider returns more items than pageSize", () => {
+    const allItems = accumulateAllItems(
+      [0, 1, 2, 3, 4, 5],
+      [{ pageNumber: 0, items: ["a", "b", "c", "d"] }, 6, 3]
+    );
+
+    expect(allItems).toEqual(["a", "b", "c", 3, 4, 5]);
   });
 });
 

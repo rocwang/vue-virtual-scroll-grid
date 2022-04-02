@@ -146,15 +146,22 @@ export function callPageProvider(
 
 export function accumulateAllItems(
   allItems: unknown[],
-  [{ pageNumber, items }, length]: [ItemsByPage, number]
+  [{ pageNumber, items }, length, pageSize]: [ItemsByPage, number, number]
 ): unknown[] {
+  const allItemsFill = new Array(Math.max(length - allItems.length, 0)).fill(
+    undefined
+  );
+
+  const pageFill = new Array(Math.max(pageSize - items.length, 0)).fill(
+    undefined
+  );
+
+  const normalizedItems = concat(slice(0, pageSize, items), pageFill);
+
   return pipe<unknown[][], unknown[], unknown[], unknown[], unknown[]>(
-    concat(
-      __,
-      new Array(Math.max(length - allItems.length, 0)).fill(undefined)
-    ),
-    remove(pageNumber * items.length, items.length),
-    insertAll(pageNumber * items.length, items),
+    concat(__, allItemsFill),
+    remove(pageNumber * pageSize, pageSize),
+    insertAll(pageNumber * pageSize, normalizedItems),
     slice(0, length)
   )(allItems);
 }
@@ -335,7 +342,7 @@ export function pipeline({
   const replayLength$ = length$.pipe(shareReplay(1));
 
   const allItems$: Observable<unknown[]> = pageProvider$.pipe(
-    switchMap(() => combineLatest([itemsByPage$, replayLength$])),
+    switchMap(() => combineLatest([itemsByPage$, replayLength$, pageSize$])),
     scan(accumulateAllItems, [])
   );
 
