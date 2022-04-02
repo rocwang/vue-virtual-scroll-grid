@@ -1,10 +1,12 @@
 import {
+  animationFrameScheduler,
   filter,
   fromEvent,
   fromEventPattern,
   mergeAll,
   Observable,
   pluck,
+  scheduled,
 } from "rxjs";
 import { Ref, ref, watchEffect } from "vue";
 import { partial, pipe, unary } from "ramda";
@@ -29,8 +31,11 @@ export function fromResizeObserver<T extends keyof ResizeObserverEntry>(
   elRef: MaybeElementRef,
   pluckTarget: T
 ): Observable<ResizeObserverEntry[T]> {
-  return fromEventPattern<ResizeObserverEntry[]>(
-    pipe(unary, partial(useResizeObserver, [elRef]))
+  return scheduled(
+    fromEventPattern<ResizeObserverEntry[]>(
+      pipe(unary, partial(useResizeObserver, [elRef]))
+    ),
+    animationFrameScheduler
   ).pipe(mergeAll(), pluck<ResizeObserverEntry, T>(pluckTarget));
 }
 
