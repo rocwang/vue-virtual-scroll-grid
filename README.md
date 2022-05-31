@@ -36,6 +36,7 @@ npm install vue-virtual-scroll-grid
 | `pageProviderDebounceTime` | Debounce window in milliseconds on the calls to `pageProvider`                    | `number`                                                       | Optional, an integer greater than or equal to 0      |
 | `pageSize`                 | The number of items in a page from the item provider (e.g. a backend API)         | `number`                                                       | Required, an integer greater than or equal to 1      |
 | `scrollTo`                 | Scroll to a specific item by index                                                | `number`                                                       | Optional, an integer from 0 to the `length` prop - 1 |
+| `scrollBehavior`           | The behavior of `scrollTo`. Default value is `smooth`                             | `smooth` | `auto`                                              | Optional, an string to be `smooth` or `auto`         |
 
 Example:
 
