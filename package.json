@@ -53,7 +53,7 @@
   "devDependencies": {
     "@types/jest": "^27.4.0",
     "@types/node": "^17.0.30",
-    "@types/ramda": ">=0.28.7",
+    "@types/ramda": ">=0.28.13",
     "@vitejs/plugin-vue": "^2.3.1",
     "algoliasearch": "^4.12.1",
     "jest": "^27.4.2",
