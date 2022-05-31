@@ -2,9 +2,9 @@ import {
   accumulateAllItems,
   accumulateBuffer,
   callPageProvider,
-  computeHeightAboveWindowOf,
+  computeSpaceBehindWindowOf,
   getBufferMeta,
-  getContentHeight,
+  getContentSize,
   getGridMeasurement,
   getObservableOfVisiblePageNumbers,
   getResizeMeasurement,
@@ -12,16 +12,16 @@ import {
 } from "./pipeline";
 import { TestScheduler } from "rxjs/testing";
 
-describe("computeHeightAboveWindowOf", () => {
+describe("computeSpaceBehindWindowOf", () => {
   // Mock getBoundingClientRect() for jsdom as it always returns:
   // { bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0 }
-  function createMockDiv(top: number): HTMLElement {
+  function createMockDiv(left: number = 0, top: number = 0): HTMLElement {
     const div = document.createElement("div");
     div.getBoundingClientRect = () => ({
       width: 0,
       height: 0,
       top,
-      left: 0,
+      left,
       right: 0,
       bottom: 0,
       x: 0,
@@ -32,48 +32,72 @@ describe("computeHeightAboveWindowOf", () => {
     return div;
   }
 
-  it("returns 0 when the element is below window top", () => {
-    const el = createMockDiv(100);
-    const height = computeHeightAboveWindowOf(el);
+  it("returns 0 space when the element is after window", () => {
+    const el = createMockDiv(100, 200);
+    const space = computeSpaceBehindWindowOf(el);
 
-    expect(height).toBe(0);
+    expect(space).toEqual({ width: 0, height: 0 });
   });
 
-  it("returns the height above window when the element is above window top", () => {
-    const el = createMockDiv(-100);
-    const height = computeHeightAboveWindowOf(el);
+  it("returns the space behind window when the element is before window", () => {
+    const el = createMockDiv(-100, -200);
+    const space = computeSpaceBehindWindowOf(el);
 
-    expect(height).toBe(100);
+    expect(space).toEqual({ width: 100, height: 200 });
   });
 });
 
 function createGridRoot(
   rowGap: string = "10px",
   columnGap: string = "20px",
-  gridTemplateColumns: string = "30px 30px 30px"
+  gridAutoFlow: string = "row",
+  gridTemplateColumns: string = "30px 30px 30px",
+  gridTemplateRows: string = "30px 30px 30px"
 ): HTMLElement {
   const el = document.createElement("div");
-  Object.assign(el.style, { rowGap, columnGap, gridTemplateColumns });
+  Object.assign(el.style, {
+    rowGap,
+    columnGap,
+    gridAutoFlow,
+    gridTemplateColumns,
+    gridTemplateRows,
+  });
 
   return el;
 }
 
 describe("getGridMeasurement", () => {
   it("returns correct grid measurement in numbers", () => {
-    const el = createGridRoot("10px", "20px", "30px 30px 30px");
+    const el = createGridRoot("10px", "20px", "row", "30px 30px 30px", "30px");
     const measurement = getGridMeasurement(el);
 
     expect(measurement).toEqual({
       rowGap: 10,
       colGap: 20,
+      flow: "row",
       columns: 3,
+      rows: 1,
     });
+  });
+
+  it("returns correct grid flow when flow is dense", () => {
+    const el = createGridRoot("10px", "20px", "dense");
+    const { flow } = getGridMeasurement(el);
+
+    expect(flow).toBe("row");
+  });
+
+  it("returns correct grid flow when flow contains two words", () => {
+    const el = createGridRoot("10px", "20px", "column dense");
+    const { flow } = getGridMeasurement(el);
+
+    expect(flow).toBe("column");
   });
 });
 
 describe("getResizeMeasurement", () => {
   it("returns correct grid measurement in numbers", () => {
-    const el = createGridRoot("10px", "20px", "30px 30px 30px");
+    const el = createGridRoot("10px", "20px", "column", "30px", "20px 20px");
 
     const measurement = getResizeMeasurement(el, {
       width: 10,
@@ -89,7 +113,10 @@ describe("getResizeMeasurement", () => {
 
     expect(measurement).toEqual({
       rowGap: 10,
-      columns: 3,
+      colGap: 20,
+      flow: "column",
+      columns: 1,
+      rows: 2,
       itemHeightWithGap: 30,
       itemWidthWithGap: 30,
     });
@@ -97,26 +124,56 @@ describe("getResizeMeasurement", () => {
 });
 
 describe("getBufferMeta", () => {
-  it("returns correct buffer meta data when heightAboveWindow is 0", () => {
-    const meta = getBufferMeta(1000)(0, {
-      columns: 3,
+  function createMockResizeMeasurement(flow: "row" | "column") {
+    return {
+      colGap: 20,
       rowGap: 10,
+      flow,
+      columns: 3,
+      rows: 2,
       itemHeightWithGap: 50,
       itemWidthWithGap: 50,
-    });
+    };
+  }
+
+  it("returns correct buffer meta data when flow is row and space is 0", () => {
+    const space = { width: 0, height: 0 };
+    const meta = getBufferMeta(1000, 1000)(
+      space,
+      createMockResizeMeasurement("row")
+    );
 
     expect(meta).toEqual({ bufferedOffset: 0, bufferedLength: 132 });
   });
 
-  it("returns correct buffer meta data when heightAboveWindow is greater than 0", () => {
-    const meta = getBufferMeta(1000)(5000, {
-      columns: 3,
-      rowGap: 10,
-      itemHeightWithGap: 50,
-      itemWidthWithGap: 50,
-    });
+  it("returns correct buffer meta data when flow is column and space is 0", () => {
+    const space = { width: 0, height: 0 };
+    const meta = getBufferMeta(1000, 1000)(
+      space,
+      createMockResizeMeasurement("column")
+    );
+
+    expect(meta).toEqual({ bufferedOffset: 0, bufferedLength: 88 });
+  });
+
+  it("returns correct buffer meta data when flow is row and space is greater than 0", () => {
+    const space = { width: 5000, height: 5000 };
+    const meta = getBufferMeta(1000, 1000)(
+      space,
+      createMockResizeMeasurement("row")
+    );
 
     expect(meta).toEqual({ bufferedOffset: 267, bufferedLength: 132 });
+  });
+
+  it("returns correct buffer meta data when flow is column and space is greater than 0", () => {
+    const space = { width: 5000, height: 5000 };
+    const meta = getBufferMeta(1000, 1000)(
+      space,
+      createMockResizeMeasurement("column")
+    );
+
+    expect(meta).toEqual({ bufferedOffset: 178, bufferedLength: 88 });
   });
 });
 
@@ -225,12 +282,15 @@ describe("accumulateAllItems", () => {
 });
 
 describe("getVisibleItems", () => {
-  it("returns correct visible items", () => {
+  it("returns correct visible items when flow is row", () => {
     const visibleItems = getVisibleItems(
       { bufferedOffset: 2, bufferedLength: 2 },
       {
-        columns: 2,
+        colGap: 10,
         rowGap: 10,
+        flow: "row",
+        columns: 2,
+        rows: 2,
         itemHeightWithGap: 50,
         itemWidthWithGap: 60,
       },
@@ -256,6 +316,8 @@ describe("getVisibleItems", () => {
       },
     ]);
   });
+
+  // TODO: test getVisibleItems() when flow is column
 });
 
 describe("accumulateBuffer", () => {
@@ -335,19 +397,31 @@ describe("accumulateBuffer", () => {
   });
 });
 
-describe("getContentHeight", () => {
-  it("returns correct content height", () => {
-    const contentHeight = getContentHeight(
-      {
-        columns: 5,
-        rowGap: 10,
-        itemHeightWithGap: 100,
-        itemWidthWithGap: 100,
-      },
-      1000
-    );
+describe("getContentSize", () => {
+  function createMockResizeMeasurement(flow: "row" | "column") {
+    return {
+      colGap: 10,
+      rowGap: 10,
+      flow: flow,
+      columns: 5,
+      rows: 5,
+      itemHeightWithGap: 100,
+      itemWidthWithGap: 100,
+    };
+  }
 
-    expect(contentHeight).toBe(19_990);
+  it("returns correct content width", () => {
+    const measurement = createMockResizeMeasurement("column");
+    const contentSize = getContentSize(measurement, 1000);
+
+    expect(contentSize).toEqual({ width: 19_990 });
+  });
+
+  it("returns correct content height", () => {
+    const measurement = createMockResizeMeasurement("row");
+    const contentSize = getContentSize(measurement, 1000);
+
+    expect(contentSize).toEqual({ height: 19_990 });
   });
 });
 

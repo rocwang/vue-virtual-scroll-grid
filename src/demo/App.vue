@@ -1,42 +1,46 @@
 <template>
-  <Header />
+  <div :class="$style.root">
+    <Header :class="$style.header" />
 
-  <Grid
-    :length="length"
-    :pageSize="pageSize"
-    :pageProvider="pageProvider"
-    :pageProviderDebounceTime="0"
-    :scrollTo="scrollTo"
-    :scrollBehavior="scrollBehavior"
-    :class="$style.grid"
-  >
-    <template v-slot:probe>
-      <ProductItem sizes="(min-width: 768px) 360px, 290px" />
-    </template>
+    <div :class="$style.gridWrapper">
+      <Grid
+        :length="length"
+        :pageSize="pageSize"
+        :pageProvider="pageProvider"
+        :pageProviderDebounceTime="0"
+        :scrollTo="scrollTo"
+        :scrollBehavior="scrollBehavior"
+        :class="[$style.grid, $style[scrollMode]]"
+      >
+        <template v-slot:probe>
+          <ProductItem sizes="(min-width: 768px) 360px, 290px" />
+        </template>
 
-    <template v-slot:placeholder="{ style }">
-      <ProductItem :style="style" sizes="(min-width: 768px) 360px, 290px" />
-    </template>
+        <template v-slot:placeholder="{ style }">
+          <ProductItem :style="style" sizes="(min-width: 768px) 360px, 290px" />
+        </template>
 
-    <template v-slot:default="{ item, style }">
-      <ProductItem
-        :handle="item.handle"
-        :price="item.price * 100"
-        :compare-at-price="item.compare_at_price * 100"
-        :published-at="new Date(item.published_at)"
-        :style="style"
-        :master-src="item.product_image"
-        :initial-alt-master-src="true"
-        :alt="item.title"
-        sizes="(min-width: 768px) 360px, 290px"
-        :tags="item.tags"
-        :vendor="item.vendor"
-        :title="item.title"
-      />
-    </template>
-  </Grid>
+        <template v-slot:default="{ item, style }">
+          <ProductItem
+            :handle="item.handle"
+            :price="item.price * 100"
+            :compare-at-price="item.compare_at_price * 100"
+            :published-at="new Date(item.published_at)"
+            :style="style"
+            :master-src="item.product_image"
+            :initial-alt-master-src="true"
+            :alt="item.title"
+            sizes="(min-width: 768px) 360px, 290px"
+            :tags="item.tags"
+            :vendor="item.vendor"
+            :title="item.title"
+          />
+        </template>
+      </Grid>
+    </div>
 
-  <Control />
+    <Control :class="$style.controls" />
+  </div>
 </template>
 
 <script lang="ts">
@@ -45,7 +49,14 @@ import Grid from "../Grid.vue";
 import Header from "./Header.vue";
 import Control from "./Control.vue";
 import ProductItem from "./ProductItem.vue";
-import { length, pageSize, pageProvider, scrollTo, scrollBehavior } from "./store";
+import {
+  length,
+  pageSize,
+  pageProvider,
+  scrollMode,
+  scrollTo,
+  scrollBehavior
+} from "./store";
 
 export default defineComponent({
   name: "App",
@@ -54,6 +65,7 @@ export default defineComponent({
     length,
     pageSize,
     pageProvider,
+    scrollMode,
     scrollTo,
     scrollBehavior,
   }),
@@ -83,61 +95,106 @@ body {
   background-color: var(--color-white);
 }
 
+.root {
+  display: grid;
+  grid-template: "header" "gridWrapper" 1fr "controls";
+  height: 100vh;
+}
+
+.header {
+  grid-area: header;
+}
+
+.gridWrapper {
+  grid-area: gridWrapper;
+  height: 100%;
+  overflow: auto;
+}
+
+.controls {
+  grid-area: controls;
+}
+
 .grid {
   display: grid;
   padding: 0 1rem;
   grid-gap: 2rem;
-  grid-template-columns: repeat(2, 1fr);
   place-items: start stretch;
+  box-sizing: content-box;
+}
+
+.grid.vertical {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid.horizontal {
+  grid-auto-flow: column;
+  grid-template-columns: 200px;
+  grid-template-rows: repeat(2, 1fr);
 }
 
 @media (min-width: 760px) {
   .grid {
     padding: 1.5rem;
     grid-gap: 3rem;
+  }
+
+  .grid.vertical {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (min-width: 1140px) {
-  .grid {
+  .grid.vertical {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
 @media (min-width: 1520px) {
-  .grid {
+  .grid.vertical {
     grid-template-columns: repeat(5, 1fr);
   }
 }
 
 @media (min-width: 1900px) {
-  .grid {
+  .grid.vertical {
     grid-template-columns: repeat(6, 1fr);
   }
 }
 
 @media (min-width: 2280px) {
-  .grid {
+  .grid.vertical {
     grid-template-columns: repeat(7, 1fr);
   }
 }
 
 @media (min-width: 2660px) {
-  .grid {
+  .grid.vertical {
     grid-template-columns: repeat(8, 1fr);
   }
 }
 
 @media (min-width: 3040px) {
-  .grid {
+  .grid.vertical {
     grid-template-columns: repeat(9, 1fr);
   }
 }
 
 @media (min-width: 3420px) {
-  .grid {
+  .grid.vertical {
     grid-template-columns: repeat(10, 1fr);
+  }
+}
+
+@media (min-height: 721px) {
+  .grid.horizontal {
+    grid-template-rows: repeat(3, 1fr);
+  }
+}
+
+@media (min-height: 1081px) {
+  .grid.horizontal {
+    grid-template-rows: repeat(4, 1fr);
   }
 }
 </style>

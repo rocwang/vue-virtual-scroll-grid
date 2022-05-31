@@ -12,6 +12,9 @@ export const scrollBehavior = ref<ScrollBehavior>("smooth");
 export type Collection = "" | "all-mens" | "womens-view-all";
 export const collection = ref<Collection>("");
 
+export type ScrollMode = "vertical" | "horizontal";
+export const scrollMode = ref<ScrollMode>("vertical");
+
 export const generalPageProvider = curry(
   (
     collection: Collection,

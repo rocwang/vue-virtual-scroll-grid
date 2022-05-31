@@ -40,7 +40,6 @@ export default defineComponent({
 .root {
   background-color: var(--color-rice);
   padding: 1.5rem;
-  margin-bottom: 1rem;
   display: grid;
   grid-template:
     "title title" auto

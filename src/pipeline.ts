@@ -34,18 +34,28 @@ import {
   without,
   zip,
 } from "ramda";
-import { getVerticalScrollParent } from "./utilites";
+import { getScrollParents } from "./utilites";
 
-export function computeHeightAboveWindowOf(el: Element): number {
-  const top = el.getBoundingClientRect().top;
+interface SpaceBehindWindow {
+  width: number;
+  height: number;
+}
 
-  return Math.abs(Math.min(top, 0));
+export function computeSpaceBehindWindowOf(el: Element): SpaceBehindWindow {
+  const { left, top } = el.getBoundingClientRect();
+
+  return {
+    width: Math.abs(Math.min(left, 0)),
+    height: Math.abs(Math.min(top, 0)),
+  };
 }
 
 interface GridMeasurement {
   colGap: number;
   rowGap: number;
+  flow: "row" | "column";
   columns: number;
+  rows: number;
 }
 
 export function getGridMeasurement(rootEl: Element): GridMeasurement {
@@ -54,14 +64,17 @@ export function getGridMeasurement(rootEl: Element): GridMeasurement {
   return {
     rowGap: parseInt(computedStyle.getPropertyValue("row-gap")) || 0,
     colGap: parseInt(computedStyle.getPropertyValue("column-gap")) || 0,
+    flow: computedStyle.getPropertyValue("grid-auto-flow").startsWith("column")
+      ? "column"
+      : "row",
     columns: computedStyle.getPropertyValue("grid-template-columns").split(" ")
+      .length,
+    rows: computedStyle.getPropertyValue("grid-template-rows").split(" ")
       .length,
   };
 }
 
-interface ResizeMeasurement {
-  rowGap: number;
-  columns: number;
+interface ResizeMeasurement extends GridMeasurement {
   itemHeightWithGap: number;
   itemWidthWithGap: number;
 }
@@ -70,11 +83,14 @@ export function getResizeMeasurement(
   rootEl: Element,
   { height, width }: DOMRectReadOnly
 ): ResizeMeasurement {
-  const { rowGap, colGap, columns } = getGridMeasurement(rootEl);
+  const { colGap, rowGap, flow, columns, rows } = getGridMeasurement(rootEl);
 
   return {
+    colGap,
     rowGap,
+    flow,
     columns,
+    rows,
     itemHeightWithGap: height + rowGap,
     itemWidthWithGap: width + colGap,
   };
@@ -86,20 +102,50 @@ interface BufferMeta {
 }
 
 export const getBufferMeta =
-  (windowInnerHeight: number = window.innerHeight) =>
   (
-    heightAboveWindow: number,
-    { columns, rowGap, itemHeightWithGap }: ResizeMeasurement
+    windowInnerWidth: number = window.innerWidth,
+    windowInnerHeight: number = window.innerHeight
+  ) =>
+  (
+    { width: widthBehindWindow, height: heightBehindWindow }: SpaceBehindWindow,
+    {
+      colGap,
+      rowGap,
+      flow,
+      columns,
+      rows,
+      itemHeightWithGap,
+      itemWidthWithGap,
+    }: ResizeMeasurement
   ): BufferMeta => {
-    const rowsInView =
-      itemHeightWithGap &&
-      Math.ceil((windowInnerHeight + rowGap) / itemHeightWithGap) + 1;
-    const length = rowsInView * columns;
+    let crosswiseLines;
+    let gap;
+    let itemSizeWithGap;
+    let windowInnerSize;
+    let spaceBehindWindow;
+    if (flow === "row") {
+      crosswiseLines = columns;
+      gap = rowGap;
+      itemSizeWithGap = itemHeightWithGap;
+      windowInnerSize = windowInnerHeight;
+      spaceBehindWindow = heightBehindWindow;
+    } else {
+      crosswiseLines = rows;
+      gap = colGap;
+      itemSizeWithGap = itemWidthWithGap;
+      windowInnerSize = windowInnerWidth;
+      spaceBehindWindow = widthBehindWindow;
+    }
 
-    const rowsBeforeView =
-      itemHeightWithGap &&
-      Math.floor((heightAboveWindow + rowGap) / itemHeightWithGap);
-    const offset = rowsBeforeView * columns;
+    const linesInView =
+      itemSizeWithGap &&
+      Math.ceil((windowInnerSize + gap) / itemSizeWithGap) + 1;
+    const length = linesInView * crosswiseLines;
+
+    const linesBeforeView =
+      itemSizeWithGap &&
+      Math.floor((spaceBehindWindow + gap) / itemSizeWithGap);
+    const offset = linesBeforeView * crosswiseLines;
     const bufferedOffset = Math.max(offset - Math.floor(length / 2), 0);
     const bufferedLength = length * 2;
 
@@ -166,6 +212,34 @@ export function accumulateAllItems(
   )(allItems);
 }
 
+interface ItemOffset {
+  x: number;
+  y: number;
+}
+
+export function getItemOffsetByIndex(
+  index: number,
+  {
+    flow,
+    columns,
+    rows,
+    itemWidthWithGap,
+    itemHeightWithGap,
+  }: ResizeMeasurement
+): ItemOffset {
+  let x;
+  let y;
+  if (flow === "row") {
+    x = (index % columns) * itemWidthWithGap;
+    y = Math.floor(index / columns) * itemHeightWithGap;
+  } else {
+    x = Math.floor(index / rows) * itemWidthWithGap;
+    y = (index % rows) * itemHeightWithGap;
+  }
+
+  return { x, y };
+}
+
 export interface InternalItem {
   index: number;
   value: unknown | undefined;
@@ -174,15 +248,14 @@ export interface InternalItem {
 
 export function getVisibleItems(
   { bufferedOffset, bufferedLength }: BufferMeta,
-  { columns, itemWidthWithGap, itemHeightWithGap }: ResizeMeasurement,
+  resizeMeasurement: ResizeMeasurement,
   allItems: unknown[]
 ): InternalItem[] {
   return pipe<unknown[][], unknown[], InternalItem[]>(
     slice(bufferedOffset, bufferedOffset + bufferedLength),
     addIndex(ramdaMap)((value, localIndex) => {
       const index = bufferedOffset + localIndex;
-      const x = (index % columns) * itemWidthWithGap;
-      const y = Math.floor(index / columns) * itemHeightWithGap;
+      const { x, y } = getItemOffsetByIndex(index, resizeMeasurement);
 
       return {
         index,
@@ -217,11 +290,26 @@ export function accumulateBuffer(
   )(buffer);
 }
 
-export function getContentHeight(
-  { columns, rowGap, itemHeightWithGap }: ResizeMeasurement,
+interface ContentSize {
+  width?: number;
+  height?: number;
+}
+
+export function getContentSize(
+  {
+    colGap,
+    rowGap,
+    flow,
+    columns,
+    rows,
+    itemWidthWithGap,
+    itemHeightWithGap,
+  }: ResizeMeasurement,
   length: number
-): number {
-  return itemHeightWithGap * Math.ceil(length / columns) - rowGap;
+): ContentSize {
+  return flow === "row"
+    ? { height: itemHeightWithGap * Math.ceil(length / columns) - rowGap }
+    : { width: itemWidthWithGap * Math.ceil(length / rows) - colGap };
 }
 
 interface PipelineInput {
@@ -235,11 +323,19 @@ interface PipelineInput {
   scrollTo$: Observable<number | undefined>;
 }
 
-export type ScrollAction = [Element, number];
+interface ScrollOffset {
+  left?: number;
+  top?: number;
+}
+
+export type ScrollAction = {
+  target: Element;
+  offset: ScrollOffset;
+};
 
 interface PipelineOutput {
   buffer$: Observable<InternalItem[]>;
-  contentHeight$: Observable<number>;
+  contentSize$: Observable<ContentSize>;
   scrollAction$: Observable<ScrollAction>;
 }
 
@@ -254,19 +350,19 @@ export function pipeline({
   scrollTo$,
 }: PipelineInput): PipelineOutput {
   // region: measurements of the visual grid
-  const heightAboveWindow$: Observable<number> = merge(
+  const spaceBehindWindow$: Observable<SpaceBehindWindow> = merge(
     rootResize$,
     scroll$
-  ).pipe(map(computeHeightAboveWindowOf), distinctUntilChanged());
+  ).pipe(map(computeSpaceBehindWindowOf), distinctUntilChanged());
 
   const resizeMeasurement$: Observable<ResizeMeasurement> = combineLatest(
     [rootResize$, itemRect$],
     getResizeMeasurement
   ).pipe(distinctUntilChanged<ResizeMeasurement>(equals));
 
-  const contentHeight$: Observable<number> = combineLatest(
+  const contentSize$: Observable<ContentSize> = combineLatest(
     [resizeMeasurement$, length$],
-    getContentHeight
+    getContentSize
   );
   // endregion
 
@@ -279,11 +375,11 @@ export function pipeline({
           take(1)
         )
     ),
-    map<[number, ResizeMeasurement, Element], ScrollAction>(
-      ([scrollTo, { columns, itemHeightWithGap }, rootEl]) => {
-        const verticalScrollEl = getVerticalScrollParent(rootEl);
-
-        const computedStyle = window.getComputedStyle(rootEl);
+    map<[number, ResizeMeasurement, Element], ScrollAction[]>(
+      ([scrollTo, resizeMeasurement, rootEl]) => {
+        const { vertical: verticalScrollEl, horizontal: horizontalScrollEl } =
+          getScrollParents(rootEl);
+        const computedStyle = getComputedStyle(rootEl);
 
         const gridPaddingTop = parseInt(
           computedStyle.getPropertyValue("padding-top")
@@ -292,30 +388,51 @@ export function pipeline({
           computedStyle.getPropertyValue("border-top")
         );
 
+        const gridPaddingLeft = parseInt(
+          computedStyle.getPropertyValue("padding-left")
+        );
+        const gridBoarderLeft = parseInt(
+          computedStyle.getPropertyValue("border-left")
+        );
+
+        const leftToGridContainer =
+          rootEl instanceof HTMLElement &&
+          horizontalScrollEl instanceof HTMLElement
+            ? rootEl.offsetLeft - horizontalScrollEl.offsetLeft
+            : 0;
+
         const topToGridContainer =
           rootEl instanceof HTMLElement &&
           verticalScrollEl instanceof HTMLElement
             ? rootEl.offsetTop - verticalScrollEl.offsetTop
             : 0;
 
-        // The offset within the scroll container
+        const { x, y } = getItemOffsetByIndex(scrollTo, resizeMeasurement);
+
+        const scrollLeft =
+          x + leftToGridContainer + gridPaddingLeft + gridBoarderLeft;
         const scrollTop =
-          // row count * row height
-          Math.floor(scrollTo / columns) * itemHeightWithGap +
-          // top to the scroll container
-          topToGridContainer +
-          // the padding + boarder top of grid
-          gridPaddingTop +
-          gridBoarderTop;
-        return [verticalScrollEl, scrollTop];
+          y + topToGridContainer + gridPaddingTop + gridBoarderTop;
+
+        return [
+          {
+            target: verticalScrollEl,
+            offset: { top: scrollTop },
+          },
+          {
+            target: horizontalScrollEl,
+            offset: { left: scrollLeft },
+          },
+        ];
       }
-    )
+    ),
+    mergeAll()
   );
   // endregion
 
   // region: rendering buffer
   const bufferMeta$: Observable<BufferMeta> = combineLatest(
-    [heightAboveWindow$, resizeMeasurement$],
+    [spaceBehindWindow$, resizeMeasurement$],
     getBufferMeta()
   ).pipe(distinctUntilChanged<BufferMeta>(equals));
 
@@ -352,5 +469,5 @@ export function pipeline({
   ).pipe(scan(accumulateBuffer, []));
   // endregion
 
-  return { buffer$, contentHeight$, scrollAction$: scrollAction$ };
+  return { buffer$, contentSize$, scrollAction$: scrollAction$ };
 }

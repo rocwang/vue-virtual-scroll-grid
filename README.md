@@ -13,7 +13,8 @@ items (e.g. 1000+ items) as a grid in a performant way.
 - Just use CSS grid to style your grid. Minimum styling opinions form the
   library.
 - Support using a paginated API to load the items in the background.
-- Support rendering placeholders for unloaded items
+- Support rendering placeholders for unloaded items.
+- Support both vertical and horizontal scroll.
 - Loaded items are cached for better performance.
 
 ## Code Examples
@@ -112,6 +113,11 @@ Example:
   <div class="item">Probe</div>
 </template>
 ```
+
+## Scroll Mode
+
+The library uses `grid-auto-flow` CSS property to infer scroll mode. Set it to
+`column` value if you want to enable horizontal scroll.
 
 ## Caveats
 
