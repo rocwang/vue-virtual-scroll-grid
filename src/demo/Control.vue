@@ -79,17 +79,46 @@
         :class="$style.number"
       />
     </div>
+
+    <div :class="$style.scrollBehaviorProvider">
+      <p :class="$style.scrollBehavior">Scroll Behavior:</p>
+
+      <div :class="$style.radioList">
+        <label for="smooth" :class="$style.radioLabel">
+          <input
+            type="radio"
+            id="smooth"
+            value="smooth"
+            v-model="scrollBehavior"
+            :class="$style.radio"
+          />
+          Smooth
+        </label>
+
+        <label for="auto" :class="$style.radioLabel">
+          <input
+            type="radio"
+            id="auto"
+            value="auto"
+            v-model="scrollBehavior"
+            :class="$style.radio"
+          />
+          Auto
+        </label>
+      </div>
+    </div>
+    
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { collection, length, pageSize, scrollTo } from "./store";
+import { collection, length, pageSize, scrollTo, scrollBehavior } from "./store";
 
 export default defineComponent({
   name: "Control",
   setup: () => {
-    return { length, pageSize, collection, scrollTo };
+    return { length, pageSize, collection, scrollTo, scrollBehavior };
   },
 });
 </script>
@@ -109,6 +138,7 @@ export default defineComponent({
     "length pageProvider" auto
     "pageSize pageProvider" auto
     "scrollTo pageProvider" auto
+    "scrollBehavior pageProvider" auto
     / 2fr 1fr;
   place-items: center stretch;
   grid-gap: 1.5rem;
@@ -132,6 +162,14 @@ export default defineComponent({
 
 .scrollTo {
   grid-area: scrollTo;
+}
+
+.scrollBehaviorProvider {
+  grid-area: scrollBehavior;
+  place-self: stretch;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
 }
 
 .radioList {
@@ -171,7 +209,7 @@ export default defineComponent({
   font-weight: 700;
 }
 
-.category {
+.category, .scrollBehavior {
   font-weight: 700;
   margin-bottom: 1rem;
 }
@@ -179,11 +217,11 @@ export default defineComponent({
 @media (min-width: 760px) {
   .root {
     grid-template:
-      "length pageSize pageProvider scrollTo" auto
-      / 2fr 2fr 2fr 1fr;
+      "length pageSize pageProvider scrollTo scrollBehavior" auto
+      / 2fr 2fr 2fr 1fr 1fr;
   }
 
-  .category {
+  .category, .scrollBehavior {
     margin-bottom: 0.5rem;
   }
 
