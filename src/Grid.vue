@@ -85,6 +85,12 @@ export default defineComponent({
       required: false,
       validator: (value: number) => Number.isInteger(value) && value >= 0,
     },
+    scrollBehavior: {
+      type: String as PropType<"smooth" | "auto">,
+      required: false,
+      default: "smooth",
+      validator: (value: string) => ["smooth", "auto"].includes(value)
+    }
   },
   setup(props) {
     // template refs
@@ -114,7 +120,7 @@ export default defineComponent({
     onUpdated(
       once(() => {
         scrollAction$.subscribe(([el, top]: ScrollAction) => {
-          el.scrollTo({ top, behavior: "smooth" });
+          el.scrollTo({ top, behavior: props.scrollBehavior });
         });
       })
     );
