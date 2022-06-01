@@ -1,12 +1,5 @@
 <template>
-  <div
-    v-show="length > 0"
-    ref="rootRef"
-    :style="{
-      height: `${contentHeight}px`,
-      placeContent: 'start',
-    }"
-  >
+  <div v-show="length > 0" ref="rootRef" :style="rootStyles">
     <div
       :style="{
         opacity: 0,
@@ -40,7 +33,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onUpdated, PropType, ref } from "vue";
+import {
+  defineComponent,
+  onUpdated,
+  PropType,
+  ref,
+  computed,
+  StyleValue,
+} from "vue";
 import {
   fromProp,
   fromResizeObserver,
@@ -100,7 +100,7 @@ export default defineComponent({
     // data to render
     const {
       buffer$, // the items in the current scanning window
-      contentHeight$, // the height of the whole list
+      contentSize$, // the size of the whole list
       scrollAction$, // the value sent to window.scrollTo()
     } = pipeline({
       // streams of prop
@@ -119,17 +119,28 @@ export default defineComponent({
 
     onUpdated(
       once(() => {
-        scrollAction$.subscribe(([el, top]: ScrollAction) => {
-          el.scrollTo({ top, behavior: props.scrollBehavior });
+        scrollAction$.subscribe(({ target, offset }: ScrollAction) => {
+          target.scrollTo({ ...offset, behavior: props.scrollBehavior });
         });
       })
+    );
+
+    const contentSize = useObservable(contentSize$);
+    const rootStyles = computed<StyleValue>(() =>
+      Object.fromEntries([
+        ...Object.entries(contentSize.value ?? {}).map(([property, value]) => [
+          property,
+          value + "px",
+        ]),
+        ["placeContent", "start"],
+      ])
     );
 
     return {
       rootRef,
       probeRef,
       buffer: useObservable(buffer$),
-      contentHeight: useObservable(contentHeight$),
+      rootStyles,
     };
   },
 });

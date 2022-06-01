@@ -13,7 +13,8 @@ items (e.g. 1000+ items) as a grid in a performant way.
 - Just use CSS grid to style your grid. Minimum styling opinions form the
   library.
 - Support using a paginated API to load the items in the background.
-- Support rendering placeholders for unloaded items
+- Support rendering placeholders for unloaded items.
+- Support both vertical and horizontal scroll.
 - Loaded items are cached for better performance.
 
 ## Code Examples
@@ -36,7 +37,7 @@ npm install vue-virtual-scroll-grid
 | `pageProviderDebounceTime` | Debounce window in milliseconds on the calls to `pageProvider`                    | `number`                                                       | Optional, an integer greater than or equal to 0      |
 | `pageSize`                 | The number of items in a page from the item provider (e.g. a backend API)         | `number`                                                       | Required, an integer greater than or equal to 1      |
 | `scrollTo`                 | Scroll to a specific item by index                                                | `number`                                                       | Optional, an integer from 0 to the `length` prop - 1 |
-| `scrollBehavior`           | The behavior of `scrollTo`. Default value is `smooth`                             | `smooth` | `auto`                                              | Optional, a string to be `smooth` or `auto`         |
+| `scrollBehavior`           | The behavior of `scrollTo`. Default value is `smooth`                             | `smooth` &#124; `auto`                                         | Optional, a string to be `smooth` or `auto`         |
 
 Example:
 
@@ -112,6 +113,11 @@ Example:
   <div class="item">Probe</div>
 </template>
 ```
+
+## Scroll Mode
+
+The library uses `grid-auto-flow` CSS property to infer scroll mode. Set it to
+`column` value if you want to enable horizontal scroll.
 
 ## Caveats
 

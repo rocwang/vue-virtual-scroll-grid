@@ -64,19 +64,31 @@ export function useObservable<H>(observable: Observable<H>): Readonly<Ref<H>> {
   return valueRef as Readonly<Ref<H>>;
 }
 
-export function getVerticalScrollParent(
+interface ScrollParents {
+  vertical: Element;
+  horizontal: Element;
+}
+
+export function getScrollParents(
   element: Element,
   includeHidden: boolean = false
-): Element {
+): ScrollParents {
   const style = getComputedStyle(element);
+
+  if (style.position === "fixed") {
+    return {
+      vertical: document.body,
+      horizontal: document.body,
+    };
+  }
+
   const excludeStaticParent = style.position === "absolute";
   const overflowRegex = includeHidden
     ? /(auto|scroll|hidden)/
     : /(auto|scroll)/;
 
-  if (style.position === "fixed") {
-    return document.body;
-  }
+  let vertical;
+  let horizontal;
 
   for (
     let parent: Element | null = element;
@@ -85,13 +97,22 @@ export function getVerticalScrollParent(
   ) {
     const parentStyle = getComputedStyle(parent);
 
-    if (excludeStaticParent && parentStyle.position === "static") {
-      continue;
+    if (excludeStaticParent && parentStyle.position === "static") continue;
+
+    if (!horizontal && overflowRegex.test(parentStyle.overflowX)) {
+      horizontal = parent;
+      if (vertical) return { vertical, horizontal };
     }
 
-    if (overflowRegex.test(parentStyle.overflow + parentStyle.overflowY))
-      return parent;
+    if (!vertical && overflowRegex.test(parentStyle.overflowY)) {
+      vertical = parent;
+      if (horizontal) return { vertical, horizontal };
+    }
   }
 
-  return document.scrollingElement || document.documentElement;
+  const fallback = document.scrollingElement || document.documentElement;
+  return {
+    vertical: vertical ?? fallback,
+    horizontal: horizontal ?? fallback,
+  };
 }

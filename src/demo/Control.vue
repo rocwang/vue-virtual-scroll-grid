@@ -68,6 +68,34 @@
       </div>
     </div>
 
+    <div :class="$style.scrollMode">
+      <p :class="$style.category">Scroll mode:</p>
+
+      <div :class="$style.radioList">
+        <label for="vertical" :class="$style.radioLabel">
+          <input
+            type="radio"
+            id="vertical"
+            value="vertical"
+            v-model="scrollMode"
+            :class="$style.radio"
+          />
+          Vertical
+        </label>
+
+        <label for="horizontal" :class="$style.radioLabel">
+          <input
+            type="radio"
+            id="horizontal"
+            value="horizontal"
+            v-model="scrollMode"
+            :class="$style.radio"
+          />
+          Horizontal
+        </label>
+      </div>
+    </div>
+
     <div :class="$style.scrollTo">
       <label for="pageSize" :class="$style.label"> Scroll To: </label>
       <input
@@ -80,8 +108,8 @@
       />
     </div>
 
-    <div :class="$style.scrollBehaviorProvider">
-      <p :class="$style.scrollBehavior">Scroll Behavior:</p>
+    <div :class="$style.scrollBehavior">
+      <p :class="$style.category">Scroll Behavior:</p>
 
       <div :class="$style.radioList">
         <label for="smooth" :class="$style.radioLabel">
@@ -107,18 +135,31 @@
         </label>
       </div>
     </div>
-    
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { collection, length, pageSize, scrollTo, scrollBehavior } from "./store";
+import {
+  collection,
+  length,
+  pageSize,
+  scrollMode,
+  scrollTo,
+  scrollBehavior,
+} from "./store";
 
 export default defineComponent({
   name: "Control",
   setup: () => {
-    return { length, pageSize, collection, scrollTo, scrollBehavior };
+    return {
+      length,
+      pageSize,
+      collection,
+      scrollMode,
+      scrollTo,
+      scrollBehavior,
+    };
   },
 });
 </script>
@@ -135,11 +176,11 @@ export default defineComponent({
 
   display: grid;
   grid-template:
-    "length pageProvider" auto
-    "pageSize pageProvider" auto
-    "scrollTo pageProvider" auto
-    "scrollBehavior pageProvider" auto
-    / 2fr 1fr;
+    "length scrollMode pageProvider" auto
+    "pageSize scrollMode pageProvider" auto
+    "scrollTo scrollMode pageProvider" auto
+    "scrollBehavior scrollMode pageProvider" auto
+    / 2fr 1fr 1fr;
   place-items: center stretch;
   grid-gap: 1.5rem;
 }
@@ -160,11 +201,19 @@ export default defineComponent({
   justify-content: flex-start;
 }
 
+.scrollMode {
+  grid-area: scrollMode;
+  place-self: stretch;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+}
+
 .scrollTo {
   grid-area: scrollTo;
 }
 
-.scrollBehaviorProvider {
+.scrollBehavior {
   grid-area: scrollBehavior;
   place-self: stretch;
   display: flex;
@@ -209,7 +258,7 @@ export default defineComponent({
   font-weight: 700;
 }
 
-.category, .scrollBehavior {
+.category {
   font-weight: 700;
   margin-bottom: 1rem;
 }
@@ -217,11 +266,11 @@ export default defineComponent({
 @media (min-width: 760px) {
   .root {
     grid-template:
-      "length pageSize pageProvider scrollTo scrollBehavior" auto
-      / 2fr 2fr 2fr 1fr 1fr;
+      "length pageSize pageProvider scrollMode scrollTo scrollBehavior" auto
+      / 2fr 2fr 2fr 2fr 1fr 1fr;
   }
 
-  .category, .scrollBehavior {
+  .category {
     margin-bottom: 0.5rem;
   }
 
