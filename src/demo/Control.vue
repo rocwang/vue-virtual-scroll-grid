@@ -80,8 +80,8 @@
       />
     </div>
 
-    <div :class="$style.scrollBehaviorProvider">
-      <p :class="$style.scrollBehavior">Scroll Behavior:</p>
+    <div :class="$style.scrollBehavior">
+      <p :class="$style.category">Scroll Behavior:</p>
 
       <div :class="$style.radioList">
         <label for="smooth" :class="$style.radioLabel">
@@ -107,13 +107,18 @@
         </label>
       </div>
     </div>
-    
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import { collection, length, pageSize, scrollTo, scrollBehavior } from "./store";
+import {
+  collection,
+  length,
+  pageSize,
+  scrollTo,
+  scrollBehavior,
+} from "./store";
 
 export default defineComponent({
   name: "Control",
@@ -164,7 +169,7 @@ export default defineComponent({
   grid-area: scrollTo;
 }
 
-.scrollBehaviorProvider {
+.scrollBehavior {
   grid-area: scrollBehavior;
   place-self: stretch;
   display: flex;
@@ -209,7 +214,7 @@ export default defineComponent({
   font-weight: 700;
 }
 
-.category, .scrollBehavior {
+.category {
   font-weight: 700;
   margin-bottom: 1rem;
 }
@@ -221,7 +226,7 @@ export default defineComponent({
       / 2fr 2fr 2fr 1fr 1fr;
   }
 
-  .category, .scrollBehavior {
+  .category {
     margin-bottom: 0.5rem;
   }
 
