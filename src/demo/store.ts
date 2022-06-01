@@ -5,7 +5,9 @@ import { curry, prop } from "ramda";
 export const length = ref<number>(1000);
 export const pageSize = ref<number>(40);
 export const scrollTo = ref<number | undefined>(undefined);
-export const scrollBehavior = ref<string>("smooth");
+
+export type ScrollBehavior = "smooth" | "auto";
+export const scrollBehavior = ref<ScrollBehavior>("smooth");
 
 export type Collection = "" | "all-mens" | "womens-view-all";
 export const collection = ref<Collection>("");
