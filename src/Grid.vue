@@ -1,6 +1,7 @@
 <template>
-  <div v-show="length > 0" ref="rootRef" :style="rootStyles">
-    <div
+  <component :is="tag" v-show="length > 0" ref="rootRef" :style="rootStyles">
+    <component
+      :is="probeTag"
       :style="{
         opacity: 0,
         visibility: 'hidden',
@@ -12,7 +13,7 @@
       ref="probeRef"
     >
       <slot name="probe" />
-    </div>
+    </component>
 
     <template v-for="(internalItem, index) in buffer" :key="index">
       <slot
@@ -29,7 +30,7 @@
         :style="internalItem.style"
       />
     </template>
-  </div>
+  </component>
 </template>
 
 <script lang="ts">
@@ -90,7 +91,17 @@ export default defineComponent({
       required: false,
       default: "smooth",
       validator: (value: string) => ["smooth", "auto"].includes(value)
-    }
+    },
+    tag: {
+      type: String as PropType<string>,
+      required: false,
+      default: 'div',
+    },
+    probeTag: {
+      type: String as PropType<string>,
+      required: false,
+      default: 'div',
+    },
   },
   setup(props) {
     // template refs
