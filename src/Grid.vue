@@ -14,7 +14,10 @@
       <slot name="probe" />
     </div>
 
-    <template v-for="(internalItem, index) in buffer" :key="index">
+    <template
+      v-for="internalItem in buffer"
+      :key="keyPrefix + '.' + internalItem.index"
+    >
       <slot
         v-if="internalItem.value === undefined"
         name="placeholder"
@@ -39,6 +42,7 @@ import {
   PropType,
   ref,
   computed,
+  watch,
   StyleValue,
 } from "vue";
 import {
@@ -89,8 +93,8 @@ export default defineComponent({
       type: String as PropType<"smooth" | "auto">,
       required: false,
       default: "smooth",
-      validator: (value: string) => ["smooth", "auto"].includes(value)
-    }
+      validator: (value: string) => ["smooth", "auto"].includes(value),
+    },
   },
   setup(props) {
     // template refs
@@ -136,11 +140,19 @@ export default defineComponent({
       ])
     );
 
+    const keyPrefix = ref<string>("");
+    watch(
+      () => props.pageProvider,
+      () => (keyPrefix.value = String(new Date().getTime())),
+      { immediate: true }
+    );
+
     return {
       rootRef,
       probeRef,
       buffer: useObservable(buffer$),
       rootStyles,
+      keyPrefix,
     };
   },
 });
