@@ -90,7 +90,7 @@ export default defineComponent({
       type: String as PropType<"smooth" | "auto">,
       required: false,
       default: "smooth",
-      validator: (value: string) => ["smooth", "auto"].includes(value)
+      validator: (value: string) => ["smooth", "auto"].includes(value),
     },
     tag: {
       type: String as PropType<string>,
