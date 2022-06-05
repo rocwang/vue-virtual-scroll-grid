@@ -32,12 +32,14 @@ npm install vue-virtual-scroll-grid
 
 | Name                       | Description                                                                       | Type                                                           | Validation                                           |
 |----------------------------|-----------------------------------------------------------------------------------|----------------------------------------------------------------|------------------------------------------------------|
+| `tag`                      | The HTML tag used as container element. Default value is  `div`                   | `string`                                                       | Any valid HTML tag                                   |
+| `probeTag`                 | The HTML tag used as probe element. Default value is `div`                        | `string`                                                       | Any valid HTML tag                                   |
 | `length`                   | The number of items in the list                                                   | `number`                                                       | Required, an integer greater than or equal to 0      |
 | `pageProvider`             | The callback that returns a page of items as a promise. `pageNumber` start with 0 | `(pageNumber: number, pageSize: number) => Promise<unknown[]>` | Required                                             |
 | `pageProviderDebounceTime` | Debounce window in milliseconds on the calls to `pageProvider`                    | `number`                                                       | Optional, an integer greater than or equal to 0      |
 | `pageSize`                 | The number of items in a page from the item provider (e.g. a backend API)         | `number`                                                       | Required, an integer greater than or equal to 1      |
 | `scrollTo`                 | Scroll to a specific item by index                                                | `number`                                                       | Optional, an integer from 0 to the `length` prop - 1 |
-| `scrollBehavior`           | The behavior of `scrollTo`. Default value is `smooth`                             | `smooth` &#124; `auto`                                         | Optional, a string to be `smooth` or `auto`         |
+| `scrollBehavior`           | The behavior of `scrollTo`. Default value is `smooth`                             | `smooth` &#124; `auto`                                         | Optional, a string to be `smooth` or `auto`         |         
 
 Example:
 
