@@ -30,7 +30,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "gen:types": "vue-tsc --declaration --emitDeclarationOnly",
+    "gen:types": "vue-tsc --declaration --emitDeclarationOnly --skipLibCheck",
     "serve": "vite preview",
     "build": "vite build && npm run gen:types",
     "build:demo": "vite build --mode demo",
