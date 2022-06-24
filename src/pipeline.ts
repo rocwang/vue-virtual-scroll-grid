@@ -1,7 +1,6 @@
 import {
   combineLatest,
   debounceTime,
-  distinct,
   distinctUntilChanged,
   filter,
   map,
@@ -28,6 +27,7 @@ import {
   insertAll,
   isNil,
   map as ramdaMap,
+  memoizeWith,
   pipe,
   remove,
   slice,
@@ -436,30 +436,54 @@ export function pipeline({
     getBufferMeta()
   ).pipe(distinctUntilChanged<BufferMeta>(equals));
 
-  const visiblePageNumbers$ = combineLatest([
+  const visiblePageNumbers$: Observable<Observable<number>> = combineLatest([
     bufferMeta$,
     length$,
     pageSize$,
   ]).pipe(map(apply(getObservableOfVisiblePageNumbers)));
 
-  const pageNumber$ = pageProviderDebounceTime$.pipe(
-    switchMap((time) =>
-      visiblePageNumbers$.pipe(time === 0 ? identity : debounceTime(time))
+  const debouncedVisiblePageNumbers$: Observable<Observable<number>> =
+    pageProviderDebounceTime$.pipe(
+      switchMap((time) =>
+        visiblePageNumbers$.pipe(time === 0 ? identity : debounceTime(time))
+      )
+    );
+
+  const memorizedPageProvider$: Observable<PageProvider> = pageProvider$.pipe(
+    map<PageProvider, PageProvider>((f) =>
+      memoizeWith(
+        (pageNumber: number, pageSize: number) => `${pageNumber},${pageSize}`,
+        f
+      )
     ),
-    mergeAll(),
-    distinct(identity, merge(pageSize$, pageProvider$))
+    shareReplay(1)
   );
 
   const itemsByPage$: Observable<ItemsByPage> = combineLatest([
-    pageNumber$,
+    debouncedVisiblePageNumbers$,
     pageSize$,
-    pageProvider$,
-  ]).pipe(mergeMap(apply(callPageProvider)), shareReplay(1));
+    memorizedPageProvider$,
+  ]).pipe(
+    mergeMap<
+      [Observable<number>, number, PageProvider],
+      Observable<ItemsByPage>
+    >(([pageNumber$, pageSize, memorizedPageProvider]) =>
+      pageNumber$.pipe(
+        mergeMap<number, Promise<ItemsByPage>>((pageNumber) =>
+          callPageProvider(pageNumber, pageSize, memorizedPageProvider)
+        )
+      )
+    ),
+    shareReplay<ItemsByPage>(1)
+  );
 
-  const replayLength$ = length$.pipe(shareReplay(1));
+  const replayLength$: Observable<number> = length$.pipe(shareReplay(1));
+  const replayPageSize$: Observable<number> = pageSize$.pipe(shareReplay(1));
 
-  const allItems$: Observable<unknown[]> = pageProvider$.pipe(
-    switchMap(() => combineLatest([itemsByPage$, replayLength$, pageSize$])),
+  const allItems$: Observable<unknown[]> = memorizedPageProvider$.pipe(
+    switchMap(() =>
+      combineLatest([itemsByPage$, replayLength$, replayPageSize$])
+    ),
     scan(accumulateAllItems, [])
   );
 
