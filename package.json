@@ -51,12 +51,12 @@
     "rxjs": "^7.5.1"
   },
   "devDependencies": {
-    "@types/jest": "^28.0.0",
+    "@types/jest": "^28.1.4",
     "@types/node": "^18.0.0",
     "@types/ramda": ">=0.28.13",
     "@vitejs/plugin-vue": "^2.3.3",
     "algoliasearch": "^4.13.1",
-    "jest": "^28.1.0",
+    "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.0",
     "lodash-es": "^4.17.21",
     "prettier": "^2.6.1",
