@@ -57,7 +57,7 @@
     "@vitejs/plugin-vue": "^2.3.3",
     "algoliasearch": "^4.13.1",
     "jest": "^28.1.2",
-    "jest-environment-jsdom": "^28.1.0",
+    "jest-environment-jsdom": "^28.1.2",
     "lodash-es": "^4.17.21",
     "prettier": "^2.6.1",
     "semantic-release": "^19.0.3",
