@@ -46,7 +46,7 @@
     "vue": "^3.2.33"
   },
   "dependencies": {
-    "@vueuse/core": "^8.6.0",
+    "@vueuse/core": "^9.0.2",
     "ramda": ">=0.28.0",
     "rxjs": "^7.5.1"
   },
@@ -54,7 +54,7 @@
     "@types/jest": "^28.1.4",
     "@types/node": "^18.0.0",
     "@types/ramda": ">=0.28.13",
-    "@vitejs/plugin-vue": "^2.3.3",
+    "@vitejs/plugin-vue": "^3.0.1",
     "algoliasearch": "^4.13.1",
     "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
@@ -63,7 +63,7 @@
     "semantic-release": "^19.0.3",
     "ts-jest": "^28.0.3",
     "typescript": "^4.7.2",
-    "vite": "^2.9.13",
+    "vite": "^3.0.4",
     "vue": "^3.2.36",
     "vue-tsc": ">=0.38.2"
   },
@@ -71,7 +71,7 @@
     "node": ">=14"
   },
   "volta": {
-    "node": "18.4.0",
-    "npm": "8.12.2"
+    "node": "18.7.0",
+    "npm": "8.15.1"
   }
 }
