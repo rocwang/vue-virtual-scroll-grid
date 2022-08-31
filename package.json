@@ -46,7 +46,7 @@
     "vue": "^3.2.33"
   },
   "dependencies": {
-    "@vueuse/core": "^9.0.2",
+    "@vueuse/core": "^9.1.1",
     "ramda": ">=0.28.0",
     "rxjs": "^7.5.1"
   },
