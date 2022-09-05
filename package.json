@@ -54,7 +54,7 @@
     "@types/jest": "^28.1.4",
     "@types/node": "^18.7.15",
     "@types/ramda": ">=0.28.13",
-    "@vitejs/plugin-vue": "^3.0.1",
+    "@vitejs/plugin-vue": "^3.1.0",
     "algoliasearch": "^4.13.1",
     "jest": "^28.1.2",
     "jest-environment-jsdom": "^28.1.2",
