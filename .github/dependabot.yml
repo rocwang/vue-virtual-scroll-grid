@@ -13,3 +13,11 @@ updates:
       timezone: "Pacific/Auckland"
     assignees:
       - "rocwang"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      time: "09:00"
+      timezone: "Pacific/Auckland"
+    assignees:
+      - "rocwang"
