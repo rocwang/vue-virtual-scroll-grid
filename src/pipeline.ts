@@ -367,15 +367,11 @@ export function pipeline({
   // endregion
 
   // region: scroll to a given item by index
-  const scrollAction$: Observable<ScrollAction> = scrollTo$.pipe(
-    filter(complement(isNil)),
-    switchMap<number, Observable<[number, ResizeMeasurement, Element]>>(
-      (scrollTo) =>
-        combineLatest([of(scrollTo), resizeMeasurement$, rootResize$]).pipe(
-          take(1)
-        )
-    ),
-    map<[number, ResizeMeasurement, Element], ScrollAction[]>(
+  const scrollToNotNil$:Observable<number> = scrollTo$.pipe( filter(complement(isNil)))
+  const scrollAction$: Observable<ScrollAction> = combineLatest(
+    [scrollToNotNil$, resizeMeasurement$, rootResize$]
+  ).pipe(
+    mergeMap<[number, ResizeMeasurement, Element], ScrollAction[]>(
       ([scrollTo, resizeMeasurement, rootEl]) => {
         const { vertical: verticalScrollEl, horizontal: horizontalScrollEl } =
           getScrollParents(rootEl);
@@ -425,8 +421,7 @@ export function pipeline({
           },
         ];
       }
-    ),
-    mergeAll()
+    )
   );
   // endregion
 
