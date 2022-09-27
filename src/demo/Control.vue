@@ -108,6 +108,18 @@
       />
     </div>
 
+    <div :class="$style.respectScrollToOnResize">
+      <label for="respectScrollToOnResize" :class="$style.radioLabel">
+        <input
+          type="checkbox"
+          id="respectScrollToOnResize"
+          v-model="respectScrollToOnResize"
+          :class="$style.radio"
+        />
+        Snap to "Scroll To" on resizing
+      </label>
+    </div>
+
     <div :class="$style.scrollBehavior">
       <p :class="$style.category">Scroll Behavior:</p>
 
@@ -147,6 +159,7 @@ import {
   scrollMode,
   scrollTo,
   scrollBehavior,
+  respectScrollToOnResize,
 } from "./store";
 
 export default defineComponent({
@@ -159,6 +172,7 @@ export default defineComponent({
       scrollMode,
       scrollTo,
       scrollBehavior,
+      respectScrollToOnResize,
     };
   },
 });
@@ -176,26 +190,27 @@ export default defineComponent({
 
   display: grid;
   grid-template:
-    "length scrollMode pageProvider" auto
-    "pageSize scrollMode pageProvider" auto
-    "scrollTo scrollMode pageProvider" auto
-    "scrollBehavior scrollMode pageProvider" auto
-    / 2fr 1fr 1fr;
-  place-items: center stretch;
-  grid-gap: 1.5rem;
+    "length pageSize" auto
+    "pageProvider scrollTo" auto
+    "scrollMode scrollBehavior" auto
+    "respectScrollTo respectScrollTo" auto
+    / 1fr 1fr;
+  place-items: start;
+  grid-gap: 1rem;
 }
 
 .length {
   grid-area: length;
+  justify-self: stretch;
 }
 
 .pageSize {
   grid-area: pageSize;
+  justify-self: stretch;
 }
 
 .pageProvider {
   grid-area: pageProvider;
-  place-self: stretch;
   display: flex;
   flex-flow: column nowrap;
   justify-content: flex-start;
@@ -203,7 +218,6 @@ export default defineComponent({
 
 .scrollMode {
   grid-area: scrollMode;
-  place-self: stretch;
   display: flex;
   flex-flow: column nowrap;
   justify-content: flex-start;
@@ -215,16 +229,19 @@ export default defineComponent({
 
 .scrollBehavior {
   grid-area: scrollBehavior;
-  place-self: stretch;
   display: flex;
   flex-flow: column nowrap;
   justify-content: flex-start;
 }
 
+.respectScrollToOnResize {
+  grid-area: respectScrollTo;
+}
+
 .radioList {
   flex: 1 1 auto;
   display: flex;
-  flex-flow: column nowrap;
+  flex-flow: row nowrap;
   justify-content: space-between;
 }
 
@@ -238,6 +255,7 @@ export default defineComponent({
 
 .radioLabel {
   display: inline;
+  margin-right: 1rem;
 }
 
 .range {
@@ -266,8 +284,9 @@ export default defineComponent({
 @media (min-width: 760px) {
   .root {
     grid-template:
-      "length pageSize pageProvider scrollMode scrollTo scrollBehavior" auto
-      / 2fr 2fr 2fr 2fr 1fr 1fr;
+      "length pageSize pageProvider scrollMode scrollTo respectScrollTo scrollBehavior" auto
+      / 3fr 3fr 3fr 3fr 1fr 3fr 2fr;
+    grid-gap: 1.5rem;
   }
 
   .category {
@@ -281,6 +300,10 @@ export default defineComponent({
 
   .radioLabel {
     margin-right: 2rem;
+  }
+
+  .respectScrollToOnResize {
+    place-self: center;
   }
 }
 </style>

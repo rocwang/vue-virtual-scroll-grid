@@ -90,6 +90,12 @@ export default defineComponent({
       required: false,
       validator: (value: number) => Number.isInteger(value) && value >= 0,
     },
+    // Snap to `scrollTo` when the grid container is resized
+    respectScrollToOnResize: {
+      type: Boolean as PropType<boolean>,
+      required: false,
+      default: true,
+    },
     scrollBehavior: {
       type: String as PropType<"smooth" | "auto">,
       required: false,
@@ -129,13 +135,14 @@ export default defineComponent({
       rootResize$: fromResizeObserver(rootRef, "target"),
       // a stream of root elements when scrolling
       scroll$: fromWindowScroll(rootRef),
+      respectScrollToOnResize$: fromProp(props, "respectScrollToOnResize"),
       scrollTo$: fromProp(props, "scrollTo"),
     });
 
     onUpdated(
       once(() => {
-        scrollAction$.subscribe(({ target, offset }: ScrollAction) => {
-          target.scrollTo({ ...offset, behavior: props.scrollBehavior });
+        scrollAction$.subscribe(({ target, top, left }: ScrollAction) => {
+          target.scrollTo({ top, left, behavior: props.scrollBehavior });
         });
       })
     );

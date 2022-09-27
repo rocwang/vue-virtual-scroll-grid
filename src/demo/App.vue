@@ -10,6 +10,7 @@
         :pageProviderDebounceTime="0"
         :scrollTo="scrollTo"
         :scrollBehavior="scrollBehavior"
+        :respectScrollToOnResize="respectScrollToOnResize"
         :class="[$style.grid, $style[scrollMode]]"
       >
         <template v-slot:probe>
@@ -56,6 +57,7 @@ import {
   scrollMode,
   scrollTo,
   scrollBehavior,
+  respectScrollToOnResize,
 } from "./store";
 
 export default defineComponent({
@@ -68,6 +70,7 @@ export default defineComponent({
     scrollMode,
     scrollTo,
     scrollBehavior,
+    respectScrollToOnResize,
   }),
 });
 </script>

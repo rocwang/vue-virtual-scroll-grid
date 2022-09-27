@@ -5,15 +5,13 @@ import {
   filter,
   map,
   merge,
-  mergeAll,
   mergeMap,
   Observable,
-  of,
   range,
   scan,
   shareReplay,
   switchMap,
-  take,
+  withLatestFrom,
 } from "rxjs";
 import {
   __,
@@ -320,17 +318,14 @@ interface PipelineInput {
   itemRect$: Observable<DOMRectReadOnly>;
   rootResize$: Observable<Element>;
   scroll$: Observable<Element>;
+  respectScrollToOnResize$: Observable<boolean>;
   scrollTo$: Observable<number | undefined>;
-}
-
-interface ScrollOffset {
-  left?: number;
-  top?: number;
 }
 
 export type ScrollAction = {
   target: Element;
-  offset: ScrollOffset;
+  top: number;
+  left: number;
 };
 
 interface PipelineOutput {
@@ -347,6 +342,7 @@ export function pipeline({
   itemRect$,
   rootResize$,
   scroll$,
+  respectScrollToOnResize$,
   scrollTo$,
 }: PipelineInput): PipelineOutput {
   // region: measurements of the visual grid
@@ -370,12 +366,24 @@ export function pipeline({
   const scrollToNotNil$: Observable<number> = scrollTo$.pipe(
     filter(complement(isNil))
   );
-  const scrollAction$: Observable<ScrollAction> = combineLatest([
-    scrollToNotNil$,
-    resizeMeasurement$,
-    rootResize$,
-  ]).pipe(
-    mergeMap<[number, ResizeMeasurement, Element], ScrollAction[]>(
+  const scrollAction$: Observable<ScrollAction> = respectScrollToOnResize$.pipe(
+    switchMap((respectScrollToOnResize) =>
+      respectScrollToOnResize
+        ? // Emit when any input stream emits
+          combineLatest<[number, ResizeMeasurement, Element]>([
+            scrollToNotNil$,
+            resizeMeasurement$,
+            rootResize$,
+          ])
+        : // Emit only when the source stream emmits
+          scrollToNotNil$.pipe(
+            withLatestFrom<number, [ResizeMeasurement, Element]>(
+              resizeMeasurement$,
+              rootResize$
+            )
+          )
+    ),
+    map<[number, ResizeMeasurement, Element], ScrollAction>(
       ([scrollTo, resizeMeasurement, rootEl]) => {
         const { vertical: verticalScrollEl, horizontal: horizontalScrollEl } =
           getScrollParents(rootEl);
@@ -409,21 +417,11 @@ export function pipeline({
 
         const { x, y } = getItemOffsetByIndex(scrollTo, resizeMeasurement);
 
-        const scrollLeft =
-          x + leftToGridContainer + gridPaddingLeft + gridBoarderLeft;
-        const scrollTop =
-          y + topToGridContainer + gridPaddingTop + gridBoarderTop;
-
-        return [
-          {
-            target: verticalScrollEl,
-            offset: { top: scrollTop },
-          },
-          {
-            target: horizontalScrollEl,
-            offset: { left: scrollLeft },
-          },
-        ];
+        return {
+          target: verticalScrollEl,
+          top: y + topToGridContainer + gridPaddingTop + gridBoarderTop,
+          left: x + leftToGridContainer + gridPaddingLeft + gridBoarderLeft,
+        };
       }
     )
   );
