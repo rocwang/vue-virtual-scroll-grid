@@ -99,12 +99,12 @@ export default defineComponent({
     tag: {
       type: String as PropType<string>,
       required: false,
-      default: 'div',
+      default: "div",
     },
     probeTag: {
       type: String as PropType<string>,
       required: false,
-      default: 'div',
+      default: "div",
     },
   },
   setup(props) {

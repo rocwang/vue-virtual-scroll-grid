@@ -55,7 +55,7 @@ import {
   pageProvider,
   scrollMode,
   scrollTo,
-  scrollBehavior
+  scrollBehavior,
 } from "./store";
 
 export default defineComponent({
