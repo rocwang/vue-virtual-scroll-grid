@@ -17,7 +17,7 @@
 
     <template
       v-for="internalItem in buffer"
-      :key="keyPrefix + '.' + internalItem.index"
+      :key="getKey ? getKey(internalItem) : keyPrefix + '.' + internalItem.index"
     >
       <slot
         v-if="internalItem.value === undefined"
@@ -52,7 +52,7 @@ import {
   fromWindowScroll,
   useObservable,
 } from "./utilites";
-import { PageProvider, pipeline, ScrollAction } from "./pipeline";
+import { InternalItem, PageProvider, pipeline, ScrollAction } from "./pipeline";
 import { once } from "ramda";
 import { VueInstance } from "@vueuse/core";
 
@@ -111,6 +111,11 @@ export default defineComponent({
       type: String as PropType<string>,
       required: false,
       default: "div",
+    },
+    getKey: {
+      type: Function as PropType<(internalItem: InternalItem) => number | string>,
+      required: false,
+      default: undefined,
     },
   },
   setup(props) {
