@@ -41,7 +41,7 @@ npm install vue-virtual-scroll-grid
 | `scrollBehavior`           | The behavior of `scrollTo`. Default value is `smooth`                             | `smooth` &#124; `auto`                                         | Optional, a string to be `smooth` or `auto`, defaults to `smooth`   |
 | `scrollTo`                 | Scroll to a specific item by index                                                | `number`                                                       | Optional, an integer from 0 to the `length` prop - 1, defaults to 0 |
 | `tag`                      | The HTML tag used as container element. Default value is `div`                    | `string`                                                       | Optional, any valid HTML tag, defaults to `div`                     |
-| `getKey`                   | The `:key` used on each grid item. Auto-generated, but overwritable via function  | `(internalItem: InternalItem) => number | string` <sup>1</sup> | Optional, any valid Function that returns a `string` or `number`    |
+| `getKey`                   | The `:key` used on each grid item. Auto-generated, but overwritable via function  | `(internalItem: InternalItem) => number \| string` <sup>1</sup>| Optional, any valid Function that returns a `string` or `number`    |
 
 <sup>1</sup>
 ```ts
