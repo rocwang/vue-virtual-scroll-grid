@@ -1,14 +1,14 @@
 import {
   animationFrameScheduler,
   filter,
-  fromEvent,
   fromEventPattern,
+  map,
   mergeAll,
   Observable,
-  pluck,
   scheduled,
+  Subject,
 } from "rxjs";
-import { Ref, ref, watchEffect } from "vue";
+import { onMounted, Ref, ref, watchEffect } from "vue";
 import { partial, pipe, unary } from "ramda";
 import {
   MaybeElementRef,
@@ -36,23 +36,44 @@ export function fromResizeObserver<T extends keyof ResizeObserverEntry>(
       pipe(unary, partial(useResizeObserver, [elRef]))
     ),
     animationFrameScheduler
-  ).pipe(mergeAll(), pluck<ResizeObserverEntry, T>(pluckTarget));
-}
-
-export function fromWindowScroll(elRef: MaybeElementRef): Observable<Element> {
-  return fromEvent(
-    window,
-    "scroll",
-    {
-      passive: true,
-      capture: true,
-    },
-    () => unrefElement(elRef)
   ).pipe(
-    filter<Element | undefined | null, Element>((el): el is Element =>
-      Boolean(el)
+    mergeAll(),
+    map<ResizeObserverEntry, ResizeObserverEntry[T]>(
+      (entry) => entry[pluckTarget]
     )
   );
+}
+
+export function fromScrollParent(elRef: MaybeElementRef): Observable<Element> {
+  const scrollSubject = new Subject<Element>();
+
+  onMounted(() => {
+    const el = unrefElement(elRef);
+
+    if (el) {
+      const { vertical, horizontal } = getScrollParents(el);
+
+      const scrollParents =
+        vertical === horizontal ? [vertical] : [vertical, horizontal];
+
+      const pushEl = () => scrollSubject.next(el);
+
+      scrollParents.forEach((parent) =>
+        parent.addEventListener("scroll", pushEl, {
+          passive: true,
+          capture: true,
+        })
+      );
+
+      tryOnUnmounted(() =>
+        scrollParents.forEach((parent) =>
+          parent.removeEventListener("scroll", pushEl)
+        )
+      );
+    }
+  });
+
+  return scrollSubject;
 }
 
 export function useObservable<H>(observable: Observable<H>): Readonly<Ref<H>> {
@@ -92,7 +113,8 @@ export function getScrollParents(
 
   for (
     let parent: Element | null = element;
-    (parent = parent.parentElement);
+    // parent.assignedSlot.parentElement find the correct parent if the grid is inside a native web component
+    (parent = parent.assignedSlot?.parentElement ?? parent.parentElement);
 
   ) {
     const parentStyle = getComputedStyle(parent);

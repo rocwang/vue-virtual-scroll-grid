@@ -17,7 +17,9 @@
 
     <template
       v-for="internalItem in buffer"
-      :key="getKey ? getKey(internalItem) : keyPrefix + '.' + internalItem.index"
+      :key="
+        getKey ? getKey(internalItem) : keyPrefix + '.' + internalItem.index
+      "
     >
       <slot
         v-if="internalItem.value === undefined"
@@ -49,7 +51,7 @@ import {
 import {
   fromProp,
   fromResizeObserver,
-  fromWindowScroll,
+  fromScrollParent,
   useObservable,
 } from "./utilites";
 import { InternalItem, PageProvider, pipeline, ScrollAction } from "./pipeline";
@@ -113,7 +115,9 @@ export default defineComponent({
       default: "div",
     },
     getKey: {
-      type: Function as PropType<(internalItem: InternalItem) => number | string>,
+      type: Function as PropType<
+        (internalItem: InternalItem) => number | string
+      >,
       required: false,
       default: undefined,
     },
@@ -139,7 +143,7 @@ export default defineComponent({
       // a stream of root elements when it is resized
       rootResize$: fromResizeObserver(rootRef, "target"),
       // a stream of root elements when scrolling
-      scroll$: fromWindowScroll(rootRef),
+      scroll$: fromScrollParent(rootRef),
       respectScrollToOnResize$: fromProp(props, "respectScrollToOnResize"),
       scrollTo$: fromProp(props, "scrollTo"),
     });
