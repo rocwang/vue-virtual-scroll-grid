@@ -53,8 +53,11 @@ export function fromScrollParent(elRef: MaybeElementRef): Observable<Element> {
     if (el) {
       const { vertical, horizontal } = getScrollParents(el);
 
-      const scrollParents =
-        vertical === horizontal ? [vertical] : [vertical, horizontal];
+      const scrollParents = (
+        vertical === horizontal ? [vertical] : [vertical, horizontal]
+      ).map((parent) =>
+        parent === document.documentElement ? window : parent
+      );
 
       const pushEl = () => scrollSubject.next(el);
 
