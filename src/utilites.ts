@@ -56,6 +56,8 @@ export function fromScrollParent(elRef: MaybeElementRef): Observable<Element> {
       const scrollParents = (
         vertical === horizontal ? [vertical] : [vertical, horizontal]
       ).map((parent) =>
+        // If the scrolling parent is the doc root, use window instead.
+        // As using doc root might not work
         parent === document.documentElement ? window : parent
       );
 
