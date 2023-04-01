@@ -1,0 +1,8 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["group:all"],
+  assignees: ["rocwang"],
+  timezone: "Pacific/Auckland",
+  schedule: ["schedule:monthly"],
+  dependencyDashboard: true,
+}
