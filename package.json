@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
-    "@types/node": "^18.15.11",
+    "@types/node": "^20.0.0",
     "@types/ramda": ">=0.28.23",
     "@vitejs/plugin-vue": "^4.1.0",
     "algoliasearch": "^4.16.0",
@@ -72,6 +72,6 @@
   },
   "volta": {
     "node": "19.7.0",
-    "npm": "9.6.5"
+    "npm": "9.6.7"
   }
 }
