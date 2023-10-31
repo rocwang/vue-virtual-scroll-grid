@@ -122,7 +122,7 @@ export default defineComponent({
       default: undefined,
     },
   },
-  setup(props) {
+  setup(props, { expose }) {
     // template refs
     const rootRef = ref<HTMLElement | SVGElement | VueInstance>();
     const probeRef = ref<HTMLElement | SVGElement | VueInstance>();
@@ -132,6 +132,7 @@ export default defineComponent({
       buffer$, // the items in the current scanning window
       contentSize$, // the size of the whole list
       scrollAction$, // the value sent to window.scrollTo()
+      allItems$, // all items memoized by the grid
     } = pipeline({
       // streams of prop
       length$: fromProp(props, "length"),
@@ -153,7 +154,7 @@ export default defineComponent({
         scrollAction$.subscribe(({ target, top, left }: ScrollAction) => {
           target.scrollTo({ top, left, behavior: props.scrollBehavior });
         });
-      })
+      }),
     );
 
     const contentSize = useObservable(contentSize$);
@@ -164,15 +165,18 @@ export default defineComponent({
           value + "px",
         ]),
         ["placeContent", "start"],
-      ])
+      ]),
     );
 
     const keyPrefix = ref<string>("");
     watch(
       () => props.pageProvider,
       () => (keyPrefix.value = String(new Date().getTime())),
-      { immediate: true }
+      { immediate: true },
     );
+
+    const allItems = useObservable(allItems$);
+    expose({ allItems });
 
     return {
       rootRef,

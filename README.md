@@ -43,15 +43,6 @@ npm install vue-virtual-scroll-grid
 | `tag`                      | The HTML tag used as container element. Default value is `div`                    | `string`                                                       | Optional, any valid HTML tag, defaults to `div`                     |
 | `getKey`                   | The `:key` used on each grid item. Auto-generated, but overwritable via function  | `(internalItem: InternalItem) => number \| string` <sup>1</sup>| Optional, any valid Function that returns a `string` or `number`    |
 
-<sup>1</sup>
-```ts
-interface InternalItem {
-  index: number;
-  value: unknown | undefined;
-  style?: { transform: string; gridArea: string };
-}
-```
-
 Example:
 
 ```vue
@@ -126,6 +117,10 @@ Example:
   <div class="item">Probe</div>
 </template>
 ```
+
+## Exposed Public Properties
+
+* `allItems`: All items memoized by the grid
 
 ## Scroll Mode
 

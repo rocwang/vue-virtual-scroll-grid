@@ -4,6 +4,7 @@
 
     <div :class="$style.gridWrapper">
       <Grid
+        ref="grid"
         :length="length"
         :pageSize="pageSize"
         :pageProvider="pageProvider"
@@ -45,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 import Grid from "../Grid.vue";
 import Header from "./Header.vue";
 import Control from "./Control.vue";
@@ -63,15 +64,20 @@ import {
 export default defineComponent({
   name: "App",
   components: { Grid, ProductItem, Header, Control },
-  setup: () => ({
-    length,
-    pageSize,
-    pageProvider,
-    scrollMode,
-    scrollTo,
-    scrollBehavior,
-    respectScrollToOnResize,
-  }),
+  setup: () => {
+    const grid = ref(null);
+
+    return {
+      grid,
+      length,
+      pageSize,
+      pageProvider,
+      scrollMode,
+      scrollTo,
+      scrollBehavior,
+      respectScrollToOnResize,
+    };
+  },
 });
 </script>
 
