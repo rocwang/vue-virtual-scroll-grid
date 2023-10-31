@@ -20,11 +20,11 @@ export const generalPageProvider = curry(
   (
     collection: Collection,
     pageNumber: number,
-    pageSize: number
+    pageSize: number,
   ): Promise<unknown[]> =>
     algoliasearch(
       <string>import.meta.env.VITE_APP_ID,
-      <string>import.meta.env.VITE_SEARCH_ONLY_API_KEY
+      <string>import.meta.env.VITE_SEARCH_ONLY_API_KEY,
     )
       .initIndex("shopify_products")
       .search("", {
@@ -34,9 +34,9 @@ export const generalPageProvider = curry(
         facetFilters:
           collection === "" ? undefined : [`collections:${collection}`],
       })
-      .then(prop("hits"))
+      .then(prop("hits")),
 );
 
 export const pageProvider = computed(() =>
-  generalPageProvider(collection.value)
+  generalPageProvider(collection.value),
 );

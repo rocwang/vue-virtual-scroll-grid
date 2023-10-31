@@ -4,7 +4,7 @@ export default {
   methods: {
     bem(element, modifier, outputElement = false) {
       const blockClass = kebabCase(
-        this.$options.className || this.$options.name
+        this.$options.className || this.$options.name,
       );
       const elementClass = `${blockClass}__${element}`;
       const elementModifierClass = `${elementClass}--${modifier}`;

@@ -79,7 +79,7 @@ interface ResizeMeasurement extends GridMeasurement {
 
 export function getResizeMeasurement(
   rootEl: Element,
-  { height, width }: DOMRectReadOnly
+  { height, width }: DOMRectReadOnly,
 ): ResizeMeasurement {
   const { colGap, rowGap, flow, columns, rows } = getGridMeasurement(rootEl);
 
@@ -102,7 +102,7 @@ interface BufferMeta {
 export const getBufferMeta =
   (
     windowInnerWidth: number = window.innerWidth,
-    windowInnerHeight: number = window.innerHeight
+    windowInnerHeight: number = window.innerHeight,
   ) =>
   (
     { width: widthBehindWindow, height: heightBehindWindow }: SpaceBehindWindow,
@@ -114,7 +114,7 @@ export const getBufferMeta =
       rows,
       itemHeightWithGap,
       itemWidthWithGap,
-    }: ResizeMeasurement
+    }: ResizeMeasurement,
   ): BufferMeta => {
     let crosswiseLines;
     let gap;
@@ -156,11 +156,11 @@ export const getBufferMeta =
 export function getObservableOfVisiblePageNumbers(
   { bufferedOffset, bufferedLength }: BufferMeta,
   length: number,
-  pageSize: number
+  pageSize: number,
 ): Observable<number> {
   const startPage = Math.floor(bufferedOffset / pageSize);
   const endPage = Math.ceil(
-    Math.min(bufferedOffset + bufferedLength, length) / pageSize
+    Math.min(bufferedOffset + bufferedLength, length) / pageSize,
   );
   const numberOfPages = endPage - startPage;
 
@@ -174,13 +174,13 @@ interface ItemsByPage {
 
 export type PageProvider = (
   pageNumber: number,
-  pageSize: number
+  pageSize: number,
 ) => Promise<unknown[]>;
 
 export function callPageProvider(
   pageNumber: number,
   pageSize: number,
-  pageProvider: PageProvider
+  pageProvider: PageProvider,
 ): Promise<ItemsByPage> {
   return pageProvider(pageNumber, pageSize).then((items) => ({
     pageNumber,
@@ -190,14 +190,14 @@ export function callPageProvider(
 
 export function accumulateAllItems(
   allItems: unknown[],
-  [{ pageNumber, items }, length, pageSize]: [ItemsByPage, number, number]
+  [{ pageNumber, items }, length, pageSize]: [ItemsByPage, number, number],
 ): unknown[] {
   const allItemsFill = new Array(Math.max(length - allItems.length, 0)).fill(
-    undefined
+    undefined,
   );
 
   const pageFill = new Array(Math.max(pageSize - items.length, 0)).fill(
-    undefined
+    undefined,
   );
 
   const normalizedItems = concat(slice(0, pageSize, items), pageFill);
@@ -206,7 +206,7 @@ export function accumulateAllItems(
     concat(__, allItemsFill),
     remove(pageNumber * pageSize, pageSize),
     insertAll(pageNumber * pageSize, normalizedItems),
-    slice(0, length)
+    slice(0, length),
   )(allItems);
 }
 
@@ -223,7 +223,7 @@ export function getItemOffsetByIndex(
     rows,
     itemWidthWithGap,
     itemHeightWithGap,
-  }: ResizeMeasurement
+  }: ResizeMeasurement,
 ): ItemOffset {
   let x;
   let y;
@@ -247,7 +247,7 @@ export interface InternalItem {
 export function getVisibleItems(
   { bufferedOffset, bufferedLength }: BufferMeta,
   resizeMeasurement: ResizeMeasurement,
-  allItems: unknown[]
+  allItems: unknown[],
 ): InternalItem[] {
   return pipe<unknown[][], unknown[], InternalItem[]>(
     slice(bufferedOffset, bufferedOffset + bufferedLength),
@@ -263,13 +263,13 @@ export function getVisibleItems(
           transform: `translate(${x}px, ${y}px)`,
         },
       };
-    }) as (a: unknown[]) => InternalItem[]
+    }) as (a: unknown[]) => InternalItem[],
   )(allItems);
 }
 
 export function accumulateBuffer(
   buffer: InternalItem[],
-  visibleItems: InternalItem[]
+  visibleItems: InternalItem[],
 ): InternalItem[] {
   const itemsToAdd = difference(visibleItems, buffer);
   const itemsFreeToUse = difference(buffer, visibleItems);
@@ -284,7 +284,7 @@ export function accumulateBuffer(
   return pipe(
     without(itemsToDelete),
     ramdaMap((item) => replaceMap.get(item) ?? item),
-    concat(__, itemsToAppend)
+    concat(__, itemsToAppend),
   )(buffer);
 }
 
@@ -303,7 +303,7 @@ export function getContentSize(
     itemWidthWithGap,
     itemHeightWithGap,
   }: ResizeMeasurement,
-  length: number
+  length: number,
 ): ContentSize {
   return flow === "row"
     ? { height: itemHeightWithGap * Math.ceil(length / columns) - rowGap }
@@ -332,6 +332,7 @@ interface PipelineOutput {
   buffer$: Observable<InternalItem[]>;
   contentSize$: Observable<ContentSize>;
   scrollAction$: Observable<ScrollAction>;
+  allItems$: Observable<unknown[]>;
 }
 
 export function pipeline({
@@ -348,23 +349,23 @@ export function pipeline({
   // region: measurements of the visual grid
   const spaceBehindWindow$: Observable<SpaceBehindWindow> = merge(
     rootResize$,
-    scroll$
+    scroll$,
   ).pipe(map(computeSpaceBehindWindowOf), distinctUntilChanged());
 
   const resizeMeasurement$: Observable<ResizeMeasurement> = combineLatest(
     [rootResize$, itemRect$],
-    getResizeMeasurement
+    getResizeMeasurement,
   ).pipe(distinctUntilChanged<ResizeMeasurement>(equals));
 
   const contentSize$: Observable<ContentSize> = combineLatest(
     [resizeMeasurement$, length$],
-    getContentSize
+    getContentSize,
   );
   // endregion
 
   // region: scroll to a given item by index
   const scrollToNotNil$: Observable<number> = scrollTo$.pipe(
-    filter(complement(isNil))
+    filter(complement(isNil)),
   );
   const scrollAction$: Observable<ScrollAction> = respectScrollToOnResize$.pipe(
     switchMap((respectScrollToOnResize) =>
@@ -379,9 +380,9 @@ export function pipeline({
           scrollToNotNil$.pipe(
             withLatestFrom<number, [ResizeMeasurement, Element]>(
               resizeMeasurement$,
-              rootResize$
-            )
-          )
+              rootResize$,
+            ),
+          ),
     ),
     map<[number, ResizeMeasurement, Element], ScrollAction>(
       ([scrollTo, resizeMeasurement, rootEl]) => {
@@ -390,17 +391,17 @@ export function pipeline({
         const computedStyle = getComputedStyle(rootEl);
 
         const gridPaddingTop = parseInt(
-          computedStyle.getPropertyValue("padding-top")
+          computedStyle.getPropertyValue("padding-top"),
         );
         const gridBoarderTop = parseInt(
-          computedStyle.getPropertyValue("border-top")
+          computedStyle.getPropertyValue("border-top"),
         );
 
         const gridPaddingLeft = parseInt(
-          computedStyle.getPropertyValue("padding-left")
+          computedStyle.getPropertyValue("padding-left"),
         );
         const gridBoarderLeft = parseInt(
-          computedStyle.getPropertyValue("border-left")
+          computedStyle.getPropertyValue("border-left"),
         );
 
         const leftToGridContainer =
@@ -422,15 +423,15 @@ export function pipeline({
           top: y + topToGridContainer + gridPaddingTop + gridBoarderTop,
           left: x + leftToGridContainer + gridPaddingLeft + gridBoarderLeft,
         };
-      }
-    )
+      },
+    ),
   );
   // endregion
 
   // region: rendering buffer
   const bufferMeta$: Observable<BufferMeta> = combineLatest(
     [spaceBehindWindow$, resizeMeasurement$],
-    getBufferMeta()
+    getBufferMeta(),
   ).pipe(distinctUntilChanged<BufferMeta>(equals));
 
   const visiblePageNumbers$: Observable<Observable<number>> = combineLatest([
@@ -442,18 +443,18 @@ export function pipeline({
   const debouncedVisiblePageNumbers$: Observable<Observable<number>> =
     pageProviderDebounceTime$.pipe(
       switchMap((time) =>
-        visiblePageNumbers$.pipe(time === 0 ? identity : debounceTime(time))
-      )
+        visiblePageNumbers$.pipe(time === 0 ? identity : debounceTime(time)),
+      ),
     );
 
   const memorizedPageProvider$: Observable<PageProvider> = pageProvider$.pipe(
     map<PageProvider, PageProvider>((f) =>
       memoizeWith(
         (pageNumber: number, pageSize: number) => `${pageNumber},${pageSize}`,
-        f
-      )
+        f,
+      ),
     ),
-    shareReplay(1)
+    shareReplay(1),
   );
 
   const itemsByPage$: Observable<ItemsByPage> = combineLatest([
@@ -467,11 +468,11 @@ export function pipeline({
     >(([pageNumber$, pageSize, memorizedPageProvider]) =>
       pageNumber$.pipe(
         mergeMap<number, Promise<ItemsByPage>>((pageNumber) =>
-          callPageProvider(pageNumber, pageSize, memorizedPageProvider)
-        )
-      )
+          callPageProvider(pageNumber, pageSize, memorizedPageProvider),
+        ),
+      ),
     ),
-    shareReplay<ItemsByPage>(1)
+    shareReplay<ItemsByPage>(1),
   );
 
   const replayLength$: Observable<number> = length$.pipe(shareReplay(1));
@@ -479,16 +480,16 @@ export function pipeline({
 
   const allItems$: Observable<unknown[]> = memorizedPageProvider$.pipe(
     switchMap(() =>
-      combineLatest([itemsByPage$, replayLength$, replayPageSize$])
+      combineLatest([itemsByPage$, replayLength$, replayPageSize$]),
     ),
-    scan(accumulateAllItems, [])
+    scan(accumulateAllItems, []),
   );
 
   const buffer$: Observable<InternalItem[]> = combineLatest(
     [bufferMeta$, resizeMeasurement$, allItems$],
-    getVisibleItems
+    getVisibleItems,
   ).pipe(scan(accumulateBuffer, []));
   // endregion
 
-  return { buffer$, contentSize$, scrollAction$: scrollAction$ };
+  return { buffer$, contentSize$, scrollAction$, allItems$ };
 }
