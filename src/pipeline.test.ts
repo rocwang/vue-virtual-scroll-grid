@@ -52,7 +52,7 @@ function createGridRoot(
   columnGap: string = "20px",
   gridAutoFlow: string = "row",
   gridTemplateColumns: string = "30px 30px 30px",
-  gridTemplateRows: string = "30px 30px 30px"
+  gridTemplateRows: string = "30px 30px 30px",
 ): HTMLElement {
   const el = document.createElement("div");
   Object.assign(el.style, {
@@ -140,7 +140,7 @@ describe("getBufferMeta", () => {
     const space = { width: 0, height: 0 };
     const meta = getBufferMeta(1000, 1000)(
       space,
-      createMockResizeMeasurement("row")
+      createMockResizeMeasurement("row"),
     );
 
     expect(meta).toEqual({ bufferedOffset: 0, bufferedLength: 132 });
@@ -150,7 +150,7 @@ describe("getBufferMeta", () => {
     const space = { width: 0, height: 0 };
     const meta = getBufferMeta(1000, 1000)(
       space,
-      createMockResizeMeasurement("column")
+      createMockResizeMeasurement("column"),
     );
 
     expect(meta).toEqual({ bufferedOffset: 0, bufferedLength: 88 });
@@ -160,7 +160,7 @@ describe("getBufferMeta", () => {
     const space = { width: 5000, height: 5000 };
     const meta = getBufferMeta(1000, 1000)(
       space,
-      createMockResizeMeasurement("row")
+      createMockResizeMeasurement("row"),
     );
 
     expect(meta).toEqual({ bufferedOffset: 267, bufferedLength: 132 });
@@ -170,7 +170,7 @@ describe("getBufferMeta", () => {
     const space = { width: 5000, height: 5000 };
     const meta = getBufferMeta(1000, 1000)(
       space,
-      createMockResizeMeasurement("column")
+      createMockResizeMeasurement("column"),
     );
 
     expect(meta).toEqual({ bufferedOffset: 178, bufferedLength: 88 });
@@ -189,7 +189,7 @@ describe("getObservableOfVisiblePageNumbers", () => {
       const pageNumber$ = getObservableOfVisiblePageNumbers(
         { bufferedOffset: 0, bufferedLength: 10 },
         100,
-        20
+        20,
       );
       expectObservable(pageNumber$).toBe(expectedMarble, expectedPageNumbers);
     });
@@ -202,7 +202,7 @@ describe("getObservableOfVisiblePageNumbers", () => {
       const pageNumber$ = getObservableOfVisiblePageNumbers(
         { bufferedOffset: 50, bufferedLength: 80 },
         200,
-        20
+        20,
       );
       expectObservable(pageNumber$).toBe(expectedMarble, expectedPageNumbers);
     });
@@ -215,7 +215,7 @@ describe("getObservableOfVisiblePageNumbers", () => {
       const pageNumber$ = getObservableOfVisiblePageNumbers(
         { bufferedOffset: 50, bufferedLength: 80 },
         100,
-        20
+        20,
       );
       expectObservable(pageNumber$).toBe(expectedMarble, expectedPageNumbers);
     });
@@ -236,7 +236,7 @@ describe("accumulateAllItems", () => {
   it("can extend allItems", () => {
     const allItems = accumulateAllItems(
       [0, 1, 2, 3, 4, 5],
-      [{ pageNumber: 1, items: ["a", "b", "c"] }, 10, 3]
+      [{ pageNumber: 1, items: ["a", "b", "c"] }, 10, 3],
     );
 
     expect(allItems).toEqual([
@@ -256,7 +256,7 @@ describe("accumulateAllItems", () => {
   it("can shrink allItems", () => {
     const allItems = accumulateAllItems(
       [0, 1, 2, 3, 4, 5, 6],
-      [{ pageNumber: 0, items: ["a", "b", "c"] }, 5, 3]
+      [{ pageNumber: 0, items: ["a", "b", "c"] }, 5, 3],
     );
 
     expect(allItems).toEqual(["a", "b", "c", 3, 4]);
@@ -265,7 +265,7 @@ describe("accumulateAllItems", () => {
   it("behave properly when pageProvider returns fewer items than pageSize", () => {
     const allItems = accumulateAllItems(
       [0, 1, 2, 3, 4, 5],
-      [{ pageNumber: 0, items: ["a", "b"] }, 6, 3]
+      [{ pageNumber: 0, items: ["a", "b"] }, 6, 3],
     );
 
     expect(allItems).toEqual(["a", "b", undefined, 3, 4, 5]);
@@ -274,7 +274,7 @@ describe("accumulateAllItems", () => {
   it("behave properly when pageProvider returns more items than pageSize", () => {
     const allItems = accumulateAllItems(
       [0, 1, 2, 3, 4, 5],
-      [{ pageNumber: 0, items: ["a", "b", "c", "d"] }, 6, 3]
+      [{ pageNumber: 0, items: ["a", "b", "c", "d"] }, 6, 3],
     );
 
     expect(allItems).toEqual(["a", "b", "c", 3, 4, 5]);
@@ -294,7 +294,7 @@ describe("getVisibleItems", () => {
         itemHeightWithGap: 50,
         itemWidthWithGap: 60,
       },
-      ["a", "b", "c", "d", "e", "f", "g"]
+      ["a", "b", "c", "d", "e", "f", "g"],
     );
 
     expect(visibleItems).toEqual([

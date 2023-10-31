@@ -37,7 +37,7 @@ export default {
       number,
       precision = 2,
       thousands = ",",
-      decimal = "."
+      decimal = ".",
     ) {
       if (isNaN(number) || number == null) {
         return 0;
@@ -48,7 +48,7 @@ export default {
       const parts = number.split(".");
       const dollarsAmount = parts[0].replace(
         /(\d)(?=(\d\d\d)+(?!\d))/g,
-        "$1" + thousands
+        "$1" + thousands,
       );
       const centsAmount = parts[1] ? decimal + parts[1] : "";
 

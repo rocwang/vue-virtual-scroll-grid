@@ -143,7 +143,7 @@ export default {
               flatSrcSet
                 ? `${flatSrcSet}, ${src} ${imgWidth}w`
                 : `${src} ${imgWidth}w`,
-            ""
+            "",
           )
         : "";
     },
@@ -171,7 +171,7 @@ export default {
         },
         {
           // options
-        }
+        },
       );
 
       io.observe(this.$el);
@@ -208,7 +208,7 @@ export default {
     },
     resizeImage(masterSrc, size, pngToJpg = true) {
       const matches = masterSrc.match(
-        /(^.*)\.(jpg|jpeg|gif|png|bmp|bitmap|tiff|tif)(\?.*)?$/i
+        /(^.*)\.(jpg|jpeg|gif|png|bmp|bitmap|tiff|tif)(\?.*)?$/i,
       );
 
       if (matches) {

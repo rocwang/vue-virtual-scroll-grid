@@ -20,27 +20,27 @@ import {
 
 export function fromProp<T, U extends keyof T>(
   props: T,
-  propName: U
+  propName: U,
 ): Observable<T[U]> {
   return new Observable((subscriber) =>
-    watchEffect(() => subscriber.next(props[propName]))
+    watchEffect(() => subscriber.next(props[propName])),
   );
 }
 
 export function fromResizeObserver<T extends keyof ResizeObserverEntry>(
   elRef: MaybeElementRef,
-  pluckTarget: T
+  pluckTarget: T,
 ): Observable<ResizeObserverEntry[T]> {
   return scheduled(
     fromEventPattern<ResizeObserverEntry[]>(
-      pipe(unary, partial(useResizeObserver, [elRef]))
+      pipe(unary, partial(useResizeObserver, [elRef])),
     ),
-    animationFrameScheduler
+    animationFrameScheduler,
   ).pipe(
     mergeAll(),
     map<ResizeObserverEntry, ResizeObserverEntry[T]>(
-      (entry) => entry[pluckTarget]
-    )
+      (entry) => entry[pluckTarget],
+    ),
   );
 }
 
@@ -58,7 +58,7 @@ export function fromScrollParent(elRef: MaybeElementRef): Observable<Element> {
       ).map((parent) =>
         // If the scrolling parent is the doc root, use window instead.
         // As using doc root might not work
-        parent === document.documentElement ? window : parent
+        parent === document.documentElement ? window : parent,
       );
 
       const pushEl = () => scrollSubject.next(el);
@@ -67,13 +67,13 @@ export function fromScrollParent(elRef: MaybeElementRef): Observable<Element> {
         parent.addEventListener("scroll", pushEl, {
           passive: true,
           capture: true,
-        })
+        }),
       );
 
       tryOnUnmounted(() =>
         scrollParents.forEach((parent) =>
-          parent.removeEventListener("scroll", pushEl)
-        )
+          parent.removeEventListener("scroll", pushEl),
+        ),
       );
     }
   });
@@ -97,7 +97,7 @@ interface ScrollParents {
 
 export function getScrollParents(
   element: Element,
-  includeHidden: boolean = false
+  includeHidden: boolean = false,
 ): ScrollParents {
   const style = getComputedStyle(element);
 
