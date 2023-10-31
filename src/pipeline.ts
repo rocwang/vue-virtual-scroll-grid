@@ -483,6 +483,7 @@ export function pipeline({
       combineLatest([itemsByPage$, replayLength$, replayPageSize$]),
     ),
     scan(accumulateAllItems, []),
+    shareReplay(1),
   );
 
   const buffer$: Observable<InternalItem[]> = combineLatest(
